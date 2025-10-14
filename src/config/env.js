@@ -36,8 +36,6 @@ module.exports = {
 
     admin: {
         code: _required("ADMIN_CODE"),
-        user: _required("ADMIN_USER"),
-        pass: _required("ADMIN_PASS")
     },
 
     jwt: {

@@ -1,15 +1,28 @@
 
+const GAMES = `
+CREATE TABLE IF NOT EXISTS games (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    max_teams INTEGER,
+    time_limit INTEGER,
+    is_current INTEGER CHECK (is_current IN (0, 1)),
+    started_at TEXT,
+    ended_at TEXT
+);
+
+
+`
 const TEAMS = `
 CREATE TABLE IF NOT EXISTS teams (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
+    game_id INTEGER,
     team_name TEXT NOT NULL UNIQUE,
     member_1 TEXT,
     member_2 TEXT,
     member_3 TEXT,
     member_4 TEXT,
-    startedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-    endedAt DATETIME,
-    access_code TEXT
+    ended_at TEXT,
+    access_code TEXT,
+    CONSTRAINT fk_t_g_id FOREIGN KEY (game_id) REFERENCES games(id) ON DELETE CASCADE
 );
 `
 
@@ -29,8 +42,8 @@ CREATE TABLE IF NOT EXISTS question_attempts (
     question_id INTEGER,
     team_id INTEGER,
     type TEXT DEFAULT 'multiple' CHECK (type IN ('multiple', 'coding')),
-    startedAt TEXT DEFAULT (datetime('now')),
-    endedAt TEXT DEFAULT NULL,
+    started_at TEXT DEFAULT (datetime('now')),
+    ended_at TEXT DEFAULT NULL,
     CONSTRAINT fk_qa_q_id FOREIGN KEY (question_id) REFERENCES questions(id) ON DELETE CASCADE,
     CONSTRAINT fk_qa_t_id FOREIGN KEY (team_id) REFERENCES teams(id) ON DELETE CASCADE,
     CONSTRAINT uq_attempt UNIQUE (question_id, team_id, type)
@@ -202,5 +215,7 @@ module.exports = {
     QUESTION_ROWS,
     QUESTION_ATTEMPTS,
     MULTIPLE_CHOICE_ATTEMPTS,
-    CODING_ATTEMPTS, LEADERBOARD
+    GAMES,
+    CODING_ATTEMPTS,
+    LEADERBOARD
 }

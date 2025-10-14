@@ -33,12 +33,27 @@ async function connect() {
 async function init() {
     const db = await connect();
 
+    await db.exec(TABLES.GAMES);
+    console.log('Created table [games].');
+
     await db.exec(TABLES.TEAMS);
+    console.log('Created table [teams].');
+
     await db.exec(TABLES.QUESTIONS);
+    console.log('Created table [questions].');
+
     await db.exec(TABLES.QUESTION_ATTEMPTS);
+    console.log('Created table [question_attempts].');
+
     await db.exec(TABLES.MULTIPLE_CHOICE_ATTEMPTS);
+    console.log('Created table [multiple_choice_attempts].');
+
     await db.exec(TABLES.CODING_ATTEMPTS);
+    console.log('Created table [coding_attempts].');
+
     await db.exec(TABLES.LEADERBOARD);
+    console.log('Created table [leaderboard].');
+
 
     console.log('✅ Tables initialized successfully.');
 }
@@ -93,6 +108,18 @@ async function seed() {
         VALUES ("Team", "John Doe", "Marvin Beak", "Philip Numbers", "El Patas", "123456")
     `)
     console.log(`✅ Seeded teams table with mock team entry`);
+
+
+    await db.run(`
+        INSERT INTO games (max_teams, time_limit, is_current, started_at, ended_at) 
+        VALUES (15, 36000, 0, 1760405854, 1760405893)
+    `)
+
+    await db.run(`
+        INSERT INTO games (max_teams, time_limit, is_current, started_at, ended_at) 
+        VALUES (15, 36000, 0, 1760405963, 1760405999)
+    `)
+    console.log(`✅ Seeded games table with mock game entry`);
 }
 
 /** 🔹 Graceful shutdown */

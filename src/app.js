@@ -1,58 +1,62 @@
-const express = require('express')
-const cors = require('cors')
-const { getQuestion } = require('./modules/game.module')
-const { resetDb } = require('./modules/admin.module')
-const { register, login } = require('./modules/auth.module')
-const { authMiddleware, requireAdmin } = require('@shared/auth')
+const express = require('express');
+const cors = require('cors');
+const http = require('http');
+const { Server } = require('socket.io');
 
 
-const app = express()
-app.use(cors())
+const authRoutes = require('./modules/auth/auth.routes')
+const questionRoutes = require('./modules/questions/questions.routes')
+const adminRoutes = require('./modules/admin/admin.routes')
+const gameRoutes = require('./modules/games/games.routes')
+
+const app = express();
+app.use(cors());
 app.use(express.json());
 
+// Create HTTP server for socket.io
+const server = http.createServer(app);
 
+// --- Socket.IO setup ---
+const io = new Server(server, {
+    cors: {
+        origin: 'http://localhost:5173', // React client
+        methods: ['GET', 'POST'],
+    },
+});
 
+io.on('connection', (socket) => {
+    console.log(`⚡ User connected: ${socket.id}`);
+
+    // Example: emit question updates
+    socket.on('request_question', async () => {
+        const question = null;
+        socket.emit('receive_question', question);
+    });
+
+    socket.on('disconnect', () => {
+        console.log(`❌ User disconnected: ${socket.id}`);
+    });
+});
+
+// --- Express routes ---
 app.get('/', async (req, res) => {
-    console.log('call made')
-    return res.status(200).json({})
-})
-
-
-
-app.get('/question', async (req, res) => {
-    const question = await getQuestion()
-    console.debug('question', { id: question.id })
-    return res.json(question);
+    console.log('call made');
+    return res.status(200).json({});
 });
 
 
-app.post('/admin/reset', authMiddleware, requireAdmin, async (req, res) => {
-    await resetDb()
-    return res.status(200).json({ success: true, message: "Database successfully reset" });
-});
-
-
-app.post('/auth/register', async (req, res) => {
-    console.debug('auth.register', req.body)
-    const accessToken = await register(req.body)
-    return res.status(200).json(accessToken);
-});
-
-
-app.post('/auth/login', async (req, res) => {
-    console.debug('auth.login', req.body)
-    const accessToken = await login(req.body)
-    return res.status(200).json(accessToken);
-});
-
-
+app.use('/auth', authRoutes)
+app.use('/questions', questionRoutes)
+app.use('/admin', adminRoutes)
+app.use('/games', gameRoutes)
 
 app.use((err, req, res, next) => {
     console.error('🔥 Error:', err);
     const status = err.status || 500;
     const message = err.message || 'Internal Server Error';
-    res.status(status).json({ success: false, error: message });
+    res.status(status).json({ success: false, message });
 });
 
 
-module.exports = app
+
+module.exports = { app, server, io };
