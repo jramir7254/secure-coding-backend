@@ -5,7 +5,7 @@ const { jwt } = require('@config/index');
 function signToken(claims) {
 
     const token = jswt.sign({ ...claims }, jwt.secret, {
-        expiresIn: '1day'
+        expiresIn: '30days'
     });
 
     console.debug('tokens.sign', { claims, token })

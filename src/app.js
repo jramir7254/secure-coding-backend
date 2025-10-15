@@ -24,19 +24,21 @@ const io = new Server(server, {
     },
 });
 
+// Listen for client connections
 io.on('connection', (socket) => {
     console.log(`⚡ User connected: ${socket.id}`);
 
-    // Example: emit question updates
-    socket.on('request_question', async () => {
-        const question = null;
-        socket.emit('receive_question', question);
+    // Listen for events from the client
+    socket.on('send_message', (data) => {
+        console.log('Message received:', data);
+        io.emit('receive_message', data); // broadcast to all clients
     });
 
     socket.on('disconnect', () => {
-        console.log(`❌ User disconnected: ${socket.id}`);
+        console.log('❌ User disconnected:', socket.id);
     });
 });
+
 
 // --- Express routes ---
 app.get('/', async (req, res) => {
