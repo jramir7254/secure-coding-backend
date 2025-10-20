@@ -10,7 +10,8 @@
       "@root": ["."],
       "@middleware/*": ["src/middleware/*"],
       "@shared/*": ["src/shared/*"],
-      "@config/*": ["src/config/*"]
+      "@config/*": ["src/config/*"],
+      "@src/*": ["src/*"]
     }
   },
   "exclude": ["node_modules", "**/node_modules/*"]

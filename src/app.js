@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const http = require('http');
 const { Server } = require('socket.io');
+const { registerSocketHandlers } = require('./modules/socket')
 
 
 const authRoutes = require('./modules/auth/auth.routes')
@@ -24,20 +25,9 @@ const io = new Server(server, {
     },
 });
 
-// Listen for client connections
-io.on('connection', (socket) => {
-    console.log(`⚡ User connected: ${socket.id}`);
+registerSocketHandlers(io);
 
-    // Listen for events from the client
-    socket.on('send_message', (data) => {
-        console.log('Message received:', data);
-        io.emit('receive_message', data); // broadcast to all clients
-    });
 
-    socket.on('disconnect', () => {
-        console.log('❌ User disconnected:', socket.id);
-    });
-});
 
 
 // --- Express routes ---

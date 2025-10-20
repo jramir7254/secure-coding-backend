@@ -1,4 +1,5 @@
 const { Router } = require('express');
+const { authMiddleware, requireAdmin } = require('@shared/auth');
 
 const { register, login } = require('./auth.module');
 
@@ -12,6 +13,13 @@ routes.post('/register', async (req, res) => {
 });
 
 routes.post('/login', async (req, res) => {
+    console.debug('auth.login', req.body);
+    const accessToken = await login(req.body);
+    return res.status(200).json(accessToken);
+});
+
+
+routes.get('/team', authMiddleware, async (req, res) => {
     console.debug('auth.login', req.body);
     const accessToken = await login(req.body);
     return res.status(200).json(accessToken);

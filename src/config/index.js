@@ -9,6 +9,7 @@ moduleAlias.addAliases({
     "@middleware": path.join(root, "middleware"),
     "@shared": path.join(root, "shared"),
     "@config": path.join(root, "config"),
+    "@src": path.join(root, ""),
 });
 
 module.exports = {

@@ -27,7 +27,7 @@ function authMiddleware(req, res, next) {
 
     try {
         const decoded = jswt.verify(token, jwt.secret);
-        req.user = decoded; // attach user info (id, email, etc.)
+        req.team = decoded; // attach user info (id, email, etc.)
         console.debug('decoded.user', { decoded })
 
         next();
@@ -41,13 +41,13 @@ function authMiddleware(req, res, next) {
 function requireAdmin(req, res, next) {
     console.info("using.require_admin")
 
-    if (!req.user) {
+    if (!req.team) {
         console.error('Missing user');
         return res.status(401).json({ success: false, error: 'Access denied. No user provided.' });
     }
 
     try {
-        if (!(req.user?.isAdmin)) {
+        if (!(req.team?.isAdmin)) {
             console.error("not_admin")
             return res.status(403).json({ success: false, message: 'Unauthorized action!' });
         }

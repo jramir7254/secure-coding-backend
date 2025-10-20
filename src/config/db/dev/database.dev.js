@@ -89,12 +89,12 @@ async function reset() {
 async function seed() {
     const db = await connect();
     const stmt = await db.prepare(
-        `INSERT INTO questions (code, answer, editable_ranges, explanation)
-     VALUES (?, ?, ?, ?)`
+        `INSERT INTO questions (code, answer, editable_ranges, explanation, expected_output)
+     VALUES (?, ?, ?, ?, ?)`
     );
 
     for (const q of TABLES.QUESTION_ROWS) {
-        await stmt.run(q.code, q.answer, JSON.stringify(q.editable_ranges), q.explanation);
+        await stmt.run(q.code, q.answer, JSON.stringify(q.editable_ranges), q.explanation, q.expected_output);
     }
 
     await stmt.finalize();
@@ -103,23 +103,7 @@ async function seed() {
     await db.run('INSERT INTO teams (team_name, access_code) VALUES ("Admin", "D3V")')
     console.log(`✅ Seeded teams table with admin entry`);
 
-    await db.run(`
-        INSERT INTO teams (team_name, member_1, member_2, member_3, member_4, access_code) 
-        VALUES ("Team", "John Doe", "Marvin Beak", "Philip Numbers", "El Patas", "123456")
-    `)
-    console.log(`✅ Seeded teams table with mock team entry`);
 
-
-    await db.run(`
-        INSERT INTO games (max_teams, time_limit, is_current, started_at, ended_at) 
-        VALUES (15, 36000, 0, 1760405854, 1760405893)
-    `)
-
-    await db.run(`
-        INSERT INTO games (max_teams, time_limit, is_current, started_at, ended_at) 
-        VALUES (15, 36000, 0, 1760405963, 1760405999)
-    `)
-    console.log(`✅ Seeded games table with mock game entry`);
 }
 
 /** 🔹 Graceful shutdown */

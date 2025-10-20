@@ -1,8 +1,11 @@
 const { Router } = require('express');
+const { snakeToCamel } = require('@shared/utils');
 
 
-const { resetDb } = require('./admin.module');
+const { resetDb, getTeamsInCurrentGame, deleteTeam } = require('./admin.module');
 const { authMiddleware, requireAdmin } = require('@shared/auth');
+const logger = require('@shared/logger');
+
 
 const routes = Router();
 
@@ -14,6 +17,18 @@ routes.post('/reset', authMiddleware, requireAdmin, async (req, res) => {
         success: true,
         message: 'Database successfully reset',
     });
+});
+
+routes.get('/teams', authMiddleware, requireAdmin, async (req, res) => {
+    const teams = await getTeamsInCurrentGame();
+    return res.status(200).json(snakeToCamel(teams));
+});
+
+routes.delete('/team/:teamId', authMiddleware, requireAdmin, async (req, res) => {
+    console.debug('params', req.params)
+    const { teamId } = req.params
+    await deleteTeam(teamId);
+    return res.status(200).json();
 });
 
 

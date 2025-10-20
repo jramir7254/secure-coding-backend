@@ -17,7 +17,7 @@ function _snakeToCamel(str) {
 }
 
 function snakeToCamel(param) {
-    if (param === null) return
+    if (param === null) return null
     if (Array.isArray(param)) return param.map(obj => snakeToCamel(obj))
     if (typeof param === 'object') return Object.keys(param).reduce((acc, key) => {
         const newKey = _snakeToCamel(key); // Use new key if mapped, otherwise keep original

@@ -41,4 +41,8 @@ module.exports = {
     jwt: {
         secret: _required("JWT_SECRET"),
     },
+
+    judge0: {
+        key: _required('JUDGE0_KEY')
+    }
 };

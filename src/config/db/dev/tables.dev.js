@@ -16,11 +16,6 @@ CREATE TABLE IF NOT EXISTS teams (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     game_id INTEGER,
     team_name TEXT NOT NULL UNIQUE,
-    member_1 TEXT,
-    member_2 TEXT,
-    member_3 TEXT,
-    member_4 TEXT,
-    ended_at TEXT,
     access_code TEXT,
     CONSTRAINT fk_t_g_id FOREIGN KEY (game_id) REFERENCES games(id) ON DELETE CASCADE
 );
@@ -31,6 +26,7 @@ CREATE TABLE IF NOT EXISTS questions (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     code TEXT NOT NULL,
     answer TEXT NOT NULL CHECK (answer IN ('compile', 'runtime', 'logic', 'vulnerability')),
+    expected_output TEXT,
     editable_ranges TEXT NOT NULL,
     explanation TEXT
 )
@@ -88,7 +84,8 @@ const QUESTION_ROWS = [
     }
 }`,
         answer: 'compile',
-        editable_ranges: [4, 4],
+        editable_ranges: [4, 1, 4, 30],
+        expected_output: "Hello, world!",
         explanation: 'Fix the compile-time error so the code prints "Hello, world!". Add the missing semicolon at the end of the print statement.'
     },
     {
@@ -99,7 +96,8 @@ const QUESTION_ROWS = [
     }
 }`,
         answer: 'runtime',
-        editable_ranges: [3, 4],
+        editable_ranges: [4, 1, 4, 30],
+        expected_output: "4",
         explanation: 'Prevent the NullPointerException. Add a null check before using text, or initialize it with a non-null value (e.g., text = "Hello").'
     },
     {
@@ -114,7 +112,8 @@ const QUESTION_ROWS = [
     }
 }`,
         answer: 'logic',
-        editable_ranges: [5, 7],
+        editable_ranges: [5, 1, 5, 30],
+        expected_output: "Sum: 15",
         explanation: 'Fix the logic so the loop sums all numbers correctly. Change the loop condition to i < numbers.length so it includes all elements.'
     },
     {
@@ -133,7 +132,8 @@ public class VulnerabilityExample {
     }
 }`,
         answer: 'vulnerability',
-        editable_ranges: [6, 9],
+        editable_ranges: [3, 1, 5, 30],
+        expected_output: "",
         explanation: 'Fix the SQL injection vulnerability. Replace string concatenation with a parameterized query using PreparedStatement (e.g., ps.setString(1, userInput)).'
     }
 ];
