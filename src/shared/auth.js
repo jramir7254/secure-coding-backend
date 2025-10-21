@@ -1,6 +1,7 @@
 const jswt = require('jsonwebtoken');
 const crypto = require('crypto');
 const { jwt } = require('@config/index');
+const logger = require('./logger');
 
 function signToken(claims) {
 
@@ -28,7 +29,7 @@ function authMiddleware(req, res, next) {
     try {
         const decoded = jswt.verify(token, jwt.secret);
         req.team = decoded; // attach user info (id, email, etc.)
-        console.debug('decoded.user', { decoded })
+        logger.debug('decoded.user', { decoded })
 
         next();
     } catch (err) {

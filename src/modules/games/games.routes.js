@@ -1,9 +1,10 @@
 const { Router } = require('express');
 const routes = Router();
 
-const { getCurrentGame, getPastGames, createGame, getLeaderboard, endCurrentGame } = require('./games.module');
+const { getCurrentGame, getPastGames, createGame, getLeaderboard, endCurrentGame, closeCurrentGame } = require('./games.module');
 const { authMiddleware, requireAdmin } = require('@shared/auth');
 const { snakeToCamel } = require('@shared/utils');
+const logger = require('@shared/logger');
 
 
 routes.get('/current', authMiddleware, async (req, res) => {
@@ -36,6 +37,17 @@ routes.post('/end', authMiddleware, requireAdmin, async (req, res) => {
     await endCurrentGame();
 
     return res.status(200)
+});
+
+/**
+ * use sentStatus instead of status to close request
+ */
+routes.post('/close', authMiddleware, requireAdmin, async (req, res) => {
+    logger.info('closing game')
+    await closeCurrentGame();
+    logger.info('returning')
+
+    return res.sendStatus(200)
 });
 
 

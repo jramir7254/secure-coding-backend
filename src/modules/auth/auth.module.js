@@ -3,8 +3,12 @@ const { generateAccessCode } = require('@shared/utils')
 const { signToken } = require('@shared/auth')
 const { admin } = require('@config/env')
 const { DuplicateResourceError, ResourceNotFoundError } = require('@shared/errors')
-const { hasCurrentGame, getCurrentGame, isGameFull } = require('../games/games.module');
+const { getCurrentGame, isCurrentGameFull } = require('../games/games.module');
 const { getIO } = require('@src/modules/socket')
+const logger = require('@shared/logger')
+
+
+
 
 
 const register = async (teamData) => {
@@ -12,42 +16,41 @@ const register = async (teamData) => {
     const currentGame = await getCurrentGame()
 
     if (!currentGame) {
-        console.error('no active game')
+        logger.warn('no active games found')
         throw new ResourceNotFoundError("No Active Games Found", 'games')
     }
-    console.info('has active game')
 
-
-    const isFull = await isGameFull()
+    const isFull = await isCurrentGameFull()
 
     if (isFull) {
-        console.error('game full')
+        logger.warn('game is full')
         throw new ResourceNotFoundError("Game full", 'games')
     }
 
 
     const db = await connect()
-    const { teamName, } = teamData
+    const { teamName } = teamData
 
     const row = await db.get('SELECT * FROM teams WHERE team_name=?', [teamName])
 
     if (row) {
-        console.debug('auth.register.exists', row)
-        throw new DuplicateResourceError('Resource already exists', 'teams', teamName)
+        logger.warn('team already exists')
+        throw new DuplicateResourceError('Team already registered', 'teams', teamName)
     }
 
     const accessCode = generateAccessCode();
-    console.info('auth.register.access_code', { accessCode })
+    logger.info('generated access code', { accessCode })
 
     const { lastID } = await db.run(
         'INSERT INTO teams (team_name, game_id, access_code) VALUES(?,?,?)',
         [teamName, currentGame.id, accessCode]
     )
 
+    logger.info('inserted team with id', { lastID })
+
     const io = getIO();
     io.emit("team_joined", { id: lastID, teamName, accessCode });
 
-    console.info('auth.register.insert', { lastID })
 
     const token = signToken({
         id: lastID,
@@ -65,7 +68,7 @@ const login = async ({ accessCode }) => {
     const db = await connect()
     const row = await db.get('SELECT * FROM teams WHERE access_code = ?', [accessCode])
 
-    if (!row) throw new ResourceNotFoundError('Not found', 'users', accessCode)
+    if (!row) throw new ResourceNotFoundError('Team not found', 'users', accessCode)
 
     console.debug('auth.login.found', row)
     console.debug('auth.login.is_admin', accessCode === admin.code)

@@ -23,6 +23,18 @@ async function endCurrentGame() {
 }
 
 
+async function closeCurrentGame() {
+    const db = await connect();
+    await db.run("UPDATE games SET is_current = 0 WHERE is_current = 1");
+
+    const cg = await getCurrentGame()
+
+    logger.debug('Is game closed?', { isClosed: cg === null })
+
+    return
+}
+
+
 async function createGame(gameOptions) {
     console.debug('game_options', gameOptions)
     const { maxTeams, timeLimit } = gameOptions
@@ -49,7 +61,7 @@ async function hasCurrentGame() {
     return await getCurrentGame() !== null
 }
 
-async function isGameFull(params) {
+async function isCurrentGameFull(params) {
     const db = await connect();
     const { id, max_teams } = await db.get('SELECT id, max_teams FROM games WHERE is_current = 1');
     const count = await db.get('SELECT COUNT (*) FROM teams WHERE game_id = ?', [id])
@@ -80,4 +92,14 @@ async function getLeaderboard(params) {
 
 
 
-module.exports = { getPastGames, getCurrentGame, hasCurrentGame, createGame, startCurrentGame, isGameFull, getLeaderboard, endCurrentGame }
+module.exports = {
+    getPastGames,
+    getCurrentGame,
+    hasCurrentGame,
+    createGame,
+    startCurrentGame,
+    isCurrentGameFull,
+    getLeaderboard,
+    endCurrentGame,
+    closeCurrentGame
+}

@@ -2,13 +2,16 @@ const { Router } = require('express');
 const { authMiddleware, requireAdmin } = require('@shared/auth');
 
 const { register, login } = require('./auth.module');
+const logger = require('@shared/logger');
 
 const routes = Router();
 
 
 routes.post('/register', async (req, res) => {
-    console.debug('auth.register', req.body);
+    logger.debug('register', req.body);
     const accessToken = await register(req.body);
+    logger.success('registration finished', { accessToken });
+
     return res.status(200).json(accessToken);
 });
 
