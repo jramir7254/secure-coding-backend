@@ -4,6 +4,7 @@ const sqlite3 = require('sqlite3');
 const { Database } = require('sqlite3');
 const { open } = require('sqlite');
 const TABLES = require('./tables.dev');
+const logger = require('@shared/logger');
 
 const dbPath = path.resolve(__dirname, 'dev.db');
 
@@ -25,7 +26,7 @@ async function connect() {
     // Enable foreign keys globally
     await db.exec('PRAGMA foreign_keys = ON;');
 
-    console.log('✅ Connected to SQLite (async) database.');
+    logger.info('database.connected');
     return db;
 }
 
@@ -34,38 +35,45 @@ async function init() {
     const db = await connect();
 
     await db.exec(TABLES.GAMES);
-    console.log('Created table [games].');
+    logger.info('table.created', { tableName: 'games' });
 
     await db.exec(TABLES.TEAMS);
-    console.log('Created table [teams].');
+    logger.info('table.created', { tableName: 'teams' });
+
 
     await db.exec(TABLES.QUESTIONS);
-    console.log('Created table [questions].');
+    logger.info('table.created', { tableName: 'questions' });
+
 
     await db.exec(TABLES.QUESTION_ATTEMPTS);
-    console.log('Created table [question_attempts].');
+    logger.info('table.created', { tableName: 'question_attempts' });
+
 
     await db.exec(TABLES.MULTIPLE_CHOICE_ATTEMPTS);
-    console.log('Created table [multiple_choice_attempts].');
+    logger.info('table.created', { tableName: 'multiple_choice_attempts' });
+
 
     await db.exec(TABLES.CODING_ATTEMPTS);
-    console.log('Created table [coding_attempts].');
+    logger.info('table.created', { tableName: 'coding_attempts' });
+
 
     await db.exec(TABLES.LEADERBOARD);
-    console.log('Created table [leaderboard].');
+    logger.info('table.created', { tableName: 'leaderboard' });
 
 
-    console.log('✅ Tables initialized successfully.');
+
+    logger.success('tables.created');
 }
 
 /** 🔹 Reset database */
 async function clear() {
-    console.log('🧹 Resetting database...');
+    logger.warn('database.reseting');
     if (db) await db.close();
 
     if (fs.existsSync(dbPath)) {
         fs.unlinkSync(dbPath);
-        console.log('🗑️ Deleted existing database file.');
+        logger.warn('database.deleted');
+
     }
 
     db = await open({
@@ -74,14 +82,15 @@ async function clear() {
     });
 
     await db.exec('PRAGMA foreign_keys = ON;');
-    console.log('✅ Created new database.');
+    logger.info('database.created');
+
 }
 
 async function reset() {
     await clear()
     await init()
     await seed()
-    console.log('✅ Database reset successfully.');
+    logger.success('database.reset');
 
 }
 
@@ -98,10 +107,11 @@ async function seed() {
     }
 
     await stmt.finalize();
-    console.log(`✅ Seeded questions table with ${TABLES.QUESTION_ROWS.length} entries`);
+    logger.info('table.seeded', { table: 'questions', entries: TABLES.QUESTION_ROWS.length });
 
     await db.run('INSERT INTO teams (team_name, access_code) VALUES ("Admin", "D3V")')
-    console.log(`✅ Seeded teams table with admin entry`);
+    logger.info('table.seeded', { table: 'admin', entries: 1 });
+
 
 
 }
@@ -109,7 +119,7 @@ async function seed() {
 /** 🔹 Graceful shutdown */
 process.on('SIGINT', async () => {
     if (db) await db.close();
-    console.log('🧹 Closed SQLite database.');
+    logger.info('database.closed');
     process.exit(0);
 });
 

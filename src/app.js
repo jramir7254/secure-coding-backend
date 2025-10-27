@@ -3,12 +3,13 @@ const cors = require('cors');
 const http = require('http');
 const { Server } = require('socket.io');
 const { registerSocketHandlers } = require('./modules/socket')
+const { requireAdmin, authMiddleware } = require('@shared/auth');
 
 
 const authRoutes = require('./modules/auth/auth.routes')
 const questionRoutes = require('./modules/questions/questions.routes')
 const adminRoutes = require('./modules/admin/admin.routes')
-const gameRoutes = require('./modules/games/games.routes')
+const gameRoutes = require('./modules/games/games.routes');
 
 const app = express();
 app.use(cors());
@@ -39,7 +40,7 @@ app.get('/', async (req, res) => {
 
 app.use('/auth', authRoutes)
 app.use('/questions', questionRoutes)
-app.use('/admin', adminRoutes)
+app.use('/admin', authMiddleware, requireAdmin, adminRoutes)
 app.use('/games', gameRoutes)
 
 app.use((err, req, res, next) => {

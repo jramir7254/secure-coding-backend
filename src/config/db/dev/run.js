@@ -13,12 +13,16 @@ function generateAccessCode() {
     return code;
 }
 
-console.log(generateAccessCode())
-// (async () => {
-//     const db = await connect()
-//     await db.run('INSERT INTO teams (team_name, access_code) VALUES ("Admin", "D3V")')
-//     // await reset()
-// })()
+(async () => {
+    const db = await connect()
+    const s = await db.all(`
+        SELECT * FROM question_attempts qa
+        JOIN multiple_choice_attempts mca ON qa.id = mca.attempt_id
+        JOIN coding_attempts ca ON qa.id = ca.attempt_id
+        WHERE qa.team_id = ?
+    `, [3]);
+    console.log(s)
+})()
 
 
 

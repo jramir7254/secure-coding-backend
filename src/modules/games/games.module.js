@@ -8,8 +8,8 @@ const { getIO } = require('../socket');
 async function getCurrentGame() {
     const db = await connect();
     const row = await db.get('SELECT * FROM games WHERE is_current = 1');
-    console.debug('has_current_game?', row ? row.id : null)
-    console.debug('has_current_game?', row)
+    logger.debug('has_current_game?', row)
+
     return row ? row : null
 }
 
@@ -19,6 +19,34 @@ async function endCurrentGame() {
 
     await db.run("UPDATE games SET ended_at = datetime('now', 'localtime') WHERE is_current = 1");
 
+
+}
+
+
+async function getTeamResults(teamId) {
+    const db = await connect();
+    const s = await db.all(`
+ SELECT 
+  qa.id AS attempt_id,
+  qa.question_id,
+  qa.team_id,
+  qa.type,
+  qa.started_at,
+  qa.ended_at,
+  mca.selected_answer,
+  ca.submitted_code
+FROM question_attempts qa
+LEFT JOIN multiple_choice_attempts mca 
+  ON qa.id = mca.attempt_id 
+  AND qa.type = 'multiple'
+LEFT JOIN coding_attempts ca 
+  ON qa.id = ca.attempt_id 
+  AND qa.type = 'coding'
+WHERE qa.team_id = ?;
+
+    `, [teamId]);
+    logger.debug('stat', s)
+    return s
 
 }
 
@@ -52,8 +80,8 @@ async function createGame(gameOptions) {
 
 async function getPastGames() {
     const db = await connect();
-    const rows = await db.all('SELECT * FROM games WHERE ended_at IS NOT NULL AND is_current = 0');
-    console.debug('num_past_games', rows ? rows.length : 0)
+    const rows = await db.all('SELECT g.*, (SELECT COUNT(*) FROM teams WHERE game_id = g.id) AS teamsPlayed FROM games g WHERE g.ended_at IS NOT NULL AND g.is_current = 0');
+    logger.debug('num_past_games', rows ? rows.length : 0)
     return rows
 }
 
@@ -61,7 +89,29 @@ async function hasCurrentGame() {
     return await getCurrentGame() !== null
 }
 
-async function isCurrentGameFull(params) {
+
+const getTopTeamsFromAllGames = async () => {
+    const db = await connect()
+    const l = await db.all(
+        "SELECT t.team_name, team_id, SUM (points) as points FROM leaderboard LEFT JOIN teams t ON t.id = team_id GROUP BY team_id ORDER BY points DESC LIMIT 3"
+    );
+    logger.debug('all teams', l)
+    return l
+}
+
+
+
+
+const getTeamsInCurrentGame = async () => {
+    const db = await connect()
+    const game = await getCurrentGame()
+    if (!game?.id) return
+    const allTeams = await db.all('SELECT * FROM teams WHERE game_id = ?', [game?.id])
+    logger.debug('all teams', allTeams)
+    return allTeams
+}
+
+async function isCurrentGameFull() {
     const db = await connect();
     const { id, max_teams } = await db.get('SELECT id, max_teams FROM games WHERE is_current = 1');
     const count = await db.get('SELECT COUNT (*) FROM teams WHERE game_id = ?', [id])
@@ -72,16 +122,16 @@ async function isCurrentGameFull(params) {
 
 
 
-async function startCurrentGame(params) {
+async function startCurrentGame() {
     const db = await connect();
     await db.run("UPDATE games SET started_at = datetime('now', 'localtime') WHERE is_current = 1");
 }
 
-async function getLeaderboard(params) {
+async function getLeaderboard() {
     logger.info('geting lead')
     const cg = await getCurrentGame()
     const db = await connect();
-    const l = await db.all("SELECT t.team_name, team_id, SUM (points) as points FROM leaderboard LEFT JOIN teams t ON t.id = team_id WHERE t.game_id = ? GROUP BY team_id ORDER BY points DESC", [cg?.id]);
+    const l = await db.all("SELECT t.team_name, team_id, SUM (points) as points FROM leaderboard LEFT JOIN teams t ON t.id = team_id WHERE t.game_id = ? GROUP BY team_id", [cg?.id]);
     logger.debug('lead', { count: l.length })
 
     return l
@@ -101,5 +151,8 @@ module.exports = {
     isCurrentGameFull,
     getLeaderboard,
     endCurrentGame,
-    closeCurrentGame
+    closeCurrentGame,
+    getTeamsInCurrentGame,
+    getTopTeamsFromAllGames,
+    getTeamResults
 }

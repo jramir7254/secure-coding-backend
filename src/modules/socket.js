@@ -1,3 +1,4 @@
+const logger = require('@shared/logger');
 const { handleGameEvents } = require('./games/games.socket')
 
 let ioInstance = null;
@@ -17,13 +18,13 @@ function registerSocketHandlers(io) {
     initSocket(io);
 
     io.on('connection', (socket) => {
-        console.log(`⚡ User connected: ${socket.id}`);
+        const socketId = socket?.id
+        logger.info(`socket.connected`, { socketId });
 
         handleGameEvents(io, socket);
 
-
         socket.on('disconnect', () => {
-            console.log(`❌ Disconnected: ${socket.id}`);
+            logger.info(`socket.disconnected`, { socketId });
         });
     });
 }

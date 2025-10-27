@@ -3,7 +3,7 @@ const logger = require('@shared/logger')
 
 const routes = Router();
 
-const { getQuestion, handleMultipleChoiceAttempt, handleCodingAttempt } = require('./questions.module');
+const { getQuestion, handleMultipleChoiceAttempt, handleCodingAttempt, getAllQuestions } = require('./questions.module');
 const { authMiddleware, requireAdmin } = require('@shared/auth');
 const { snakeToCamel } = require('@shared/utils');
 
@@ -15,6 +15,12 @@ routes.get('/current', authMiddleware, async (req, res) => {
     const { attemptId, question, questionType, startedAt } = await getQuestion(id);
     console.debug('question', { attemptId, question, questionId: question?.id, questionType, startedAt });
     return res.json(snakeToCamel({ attemptId, question, questionType, startedAt }));
+});
+
+
+routes.get('/list', authMiddleware, async (req, res) => {
+    const all = await getAllQuestions();
+    return res.json(snakeToCamel(all))
 });
 
 

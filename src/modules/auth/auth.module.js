@@ -20,6 +20,11 @@ const register = async (teamData) => {
         throw new ResourceNotFoundError("No Active Games Found", 'games')
     }
 
+    if (currentGame?.ended_at) {
+        logger.warn('game ended')
+        throw new ResourceNotFoundError("Game has ended", 'games')
+    }
+
     const isFull = await isCurrentGameFull()
 
     if (isFull) {
@@ -55,6 +60,7 @@ const register = async (teamData) => {
     const token = signToken({
         id: lastID,
         teamName,
+        gameId: currentGame.id,
         accessCode,
         isAdmin: false,
     })
@@ -70,38 +76,20 @@ const login = async ({ accessCode }) => {
 
     if (!row) throw new ResourceNotFoundError('Team not found', 'users', accessCode)
 
-    console.debug('auth.login.found', row)
-    console.debug('auth.login.is_admin', accessCode === admin.code)
+    logger.debug('auth.login.found', row)
+    logger.debug('auth.login.is_admin', accessCode === admin.code)
 
     const token = signToken({
         id: row.id,
         teamName: row.team_name,
         accessCode,
+        gameId: row.game_id,
         isAdmin: accessCode === admin.code
     })
 
     return token
 }
 
-
-const getTeam = async ({ accessCode }) => {
-    const db = await connect()
-    const row = await db.get('SELECT * FROM teams WHERE access_code = ?', [accessCode])
-
-    if (!row) throw new ResourceNotFoundError('Not found', 'users', accessCode)
-
-    console.debug('auth.login.found', row)
-    console.debug('auth.login.is_admin', accessCode === admin.code)
-
-    const token = signToken({
-        id: row.id,
-        teamName: row.team_name,
-        accessCode,
-        isAdmin: accessCode === admin.code
-    })
-
-    return token
-}
 
 
 

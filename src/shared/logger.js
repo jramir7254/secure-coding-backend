@@ -1,13 +1,9 @@
-const prettyjson = require('prettyjson');
+// @ts-nocheck
 const chalk = require('chalk');
+const stripAnsi = require('strip-ansi');
+const { colorize, color } = require('json-colorizer');
 
-const defaultOptions = {
-    keysColor: 'cyan',
-    stringColor: 'green',
-    numberColor: 'yellow',
-    dashColor: 'magenta',
-    defaultIndentation: 2,
-};
+const isProd = process.env.NODE_ENV === 'production';
 
 // ===== Color palette =====
 const RED = chalk.hex('#e06c75');
@@ -20,19 +16,75 @@ const PURPLE = chalk.hex('#c678dd');
 const WHITE = chalk.hex('#abb2bf');
 const GRAY = chalk.hex('#5c6370');
 const ERROR = chalk.hex('#a60f0f');
+const RISK = chalk.bgRed.white.bold;
 
-function renderData(data) {
-    if (data === undefined) return '';
-    if (typeof data === 'object') return '\n' + prettyjson.render(data, defaultOptions);
-    return '\n' + String(data);
+// ===== JSON colors =====
+const colors = {
+    StringKey: color.red,
+    StringLiteral: color.green,
+    NumberLiteral: color.yellow,
+    BooleanLiteral: color.magenta,
+    NullLiteral: color.red,
+    Brace: color.white,
+    Colon: color.gray,
+    Comma: color.gray,
+};
+
+// ===== Colorize message by level =====
+function colorizeLevel(level, message) {
+    switch (level) {
+        case 'RISK':
+            return {
+                level: chalk.bgRed.white.bold('RISK'),
+                msg: RISK(`‼ ${message}`),
+            };
+        case 'error':
+            return { level: ERROR('error'), msg: ERROR.bold(message) };
+        case 'warn':
+            return { level: YELLOW('warn'), msg: YELLOW(message) };
+        case 'success':
+            return { level: GREEN('success'), msg: GREEN(message) };
+        case 'debug':
+            return { level: PURPLE('debug'), msg: PURPLE(message) };
+        case 'info':
+        default:
+            return { level: CYAN(level), msg: CYAN(message) };
+    }
 }
 
+// ===== Core print function =====
+function printLog(level, message, meta = {}) {
+    const timestamp = new Date().toISOString().replace('T', ' ').split('.')[0];
+    const { level: coloredLevel, msg } = colorizeLevel(level, message);
+
+    const base = `[${WHITE(timestamp)}] [${coloredLevel}]: ${msg}`;
+
+    let output = base;
+    if (Object.keys(meta).length) {
+        const pretty = ['debug', 'error'].includes(level);
+        const metaStr = colorize(meta, { colors, pretty, indent: pretty ? 4 : 0 });
+        output += ' ' + metaStr;
+    }
+
+    if (level === 'error') {
+        console.error(output);
+    } else if (level === 'warn') {
+        console.warn(output);
+    } else {
+        console.log(output);
+    }
+}
+
+
+
+// ===== Exported logger =====
 const logger = {
-    info: (message, data) => console.log(BLUE(`[INFO]: ${message}`), renderData(data)),
-    warn: (message, data) => console.log(YELLOW(`[WARN]: ${message}`), renderData(data)),
-    error: (message, data) => console.log(RED(`[ERROR]: ${message}`), renderData(data)),
-    debug: (message, data) => console.log(PURPLE(`[DEBUG]: ${message}`), renderData(data)),
-    success: (message, data) => console.log(GREEN(`[SUCCESS]: ${message}`), renderData(data)),
+    risk: (msg, meta) => printLog("RISK", msg, meta),
+    error: (msg, meta) => printLog("error", msg, meta),
+    warn: (msg, meta) => printLog("warn", msg, meta),
+    success: (msg, meta) => printLog("success", msg, meta),
+    info: (msg, meta) => printLog("info", msg, meta),
+    debug: (msg, meta) => printLog("debug", msg, meta),
 };
 
 module.exports = logger;

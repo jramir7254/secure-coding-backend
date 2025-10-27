@@ -9,20 +9,19 @@ function signToken(claims) {
         expiresIn: '30days'
     });
 
-    console.debug('tokens.sign', { claims, token })
-
+    console.debug('token.signed', { claims, token })
     return token;
 }
 
 
 
 function authMiddleware(req, res, next) {
-    console.info("using.auth_middleware")
+    logger.info("using.auth_middleware")
     const authHeader = req.headers['authorization'];
 
     const token = authHeader && authHeader.split(' ')[1];
     if (!token) {
-        console.error('Missing token');
+        logger.error('token.missing');
         return res.status(401).json({ success: false, error: 'Access denied. No token provided.' });
     }
 
@@ -33,29 +32,28 @@ function authMiddleware(req, res, next) {
 
         next();
     } catch (err) {
-        console.error('❌ Invalid token:', err.message);
+        logger.error('token.invalid', err.message);
         res.status(403).json({ success: false, error: 'Invalid or expired token.' });
     }
 }
 
 
 function requireAdmin(req, res, next) {
-    console.info("using.require_admin")
+    logger.info("using.require_admin")
 
     if (!req.team) {
-        console.error('Missing user');
+        logger.error('team.missing');
         return res.status(401).json({ success: false, error: 'Access denied. No user provided.' });
     }
 
     try {
         if (!(req.team?.isAdmin)) {
-            console.error("not_admin")
+
             return res.status(403).json({ success: false, message: 'Unauthorized action!' });
         }
-        console.info("is_admin")
         next();
     } catch (err) {
-        console.error('User not an admin:', err.message);
+        logger.error("team.unauthorized")
         res.status(403).json({ success: false, message: 'Unauthorized action!' });
     }
 }
