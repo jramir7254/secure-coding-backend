@@ -9,7 +9,10 @@ DROP TABLE IF EXISTS coding_attempts;
 DROP TABLE IF EXISTS multiple_choice_attempts;
 DROP TABLE IF EXISTS question_attempts;
 DROP TABLE IF EXISTS code_files;
+DROP TABLE IF EXISTS exploit_flags;
+DROP TABLE IF EXISTS coding_test_cases;
 DROP TABLE IF EXISTS question_categories;
+DROP TABLE IF EXISTS mcq_answers;
 DROP TABLE IF EXISTS questions;
 DROP TABLE IF EXISTS teams;
 DROP TABLE IF EXISTS games;
@@ -35,7 +38,7 @@ CREATE TABLE teams (
     game_id INT NOT NULL,
     team_name VARCHAR(100) NOT NULL,
     join_code VARCHAR(10) UNIQUE NOT NULL,
-    on_section ENUM('mcq', 'coding', 'exploit') DEFAULT 'mcq',
+    on_section ENUM('mcq', 'coding') DEFAULT 'mcq',
     joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     finished_at TIMESTAMP DEFAULT NULL,
     FOREIGN KEY (game_id) REFERENCES games(id) ON DELETE CASCADE,
@@ -48,9 +51,10 @@ CREATE TABLE teams (
 -- ========================================
 CREATE TABLE questions (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    type ENUM('mcq', 'break', 'fix', 'exploit') NOT NULL,
+    title VARCHAR(255),
+    type ENUM('mcq', 'coding') NOT NULL,
     difficulty ENUM('easy', 'medium', 'hard') NOT NULL,
-    categories SET('compile', 'runtime', 'logic', 'vulnerability') NOT NULL,
+    tags SET('compile', 'runtime', 'logic', 'vulnerability') NOT NULL,
     description TEXT,
     explanation TEXT,
     INDEX idx_type (type),
@@ -91,29 +95,52 @@ CREATE TABLE question_attempts (
     INDEX idx_team_question (team_id, question_id)
 );
 
+
+
 -- ========================================
--- MULTIPLE CHOICE ATTEMPTS TABLE
+-- CLOSED-ENDED ATTEMPTS TABLE
 -- ========================================
-CREATE TABLE multiple_choice_attempts (
+CREATE TABLE mcq_attempts (
     id INT AUTO_INCREMENT PRIMARY KEY,
     attempt_id INT NOT NULL,
-    selected_answers JSON,
-    created_at TIMESTAMP DECIMAL CURRENT_TIMESTAMP,
+    submitted_answers JSON,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (attempt_id) REFERENCES question_attempts(id) ON DELETE CASCADE,
     INDEX idx_attempt_id (attempt_id)
 );
 
+
+
 -- ========================================
--- CODING ATTEMPTS TABLE
+-- OPEN-ENDED ATTEMPTS TABLE
 -- ========================================
 CREATE TABLE coding_attempts (
     id INT AUTO_INCREMENT PRIMARY KEY,
     attempt_id INT NOT NULL,
     submitted_code TEXT,
-    created_at TIMESTAMP DECIMAL CURRENT_TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (attempt_id) REFERENCES question_attempts(id) ON DELETE CASCADE,
     INDEX idx_attempt_id (attempt_id)
 );
+
+CREATE TABLE mcq_answers (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    question_id INT NOT NULL,
+    answers JSON NOT NULL,  -- allows multiple correct options
+    FOREIGN KEY (question_id) REFERENCES questions(id) ON DELETE CASCADE,
+    UNIQUE (question_id)
+);
+
+
+CREATE TABLE coding_answers (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    question_id INT NOT NULL,
+    input TEXT NOT NULL,
+    expected_output TEXT NOT NULL,
+    FOREIGN KEY (question_id) REFERENCES questions(id) ON DELETE CASCADE,
+    INDEX idx_question_id (question_id)
+);
+
 
 -- ========================================
 -- LEADERBOARD TABLE

@@ -36,6 +36,15 @@ class IncorrectAttemptError extends AppError {
 }
 
 
+class ExpectedAppError extends AppError {
+    constructor(message, resource, status = 200) {
+        super(message);
+        this.resource = resource;
+        this.status = status;
+    }
+}
+
+
 function isAppError(err, typeErr = AppError) {
     return err instanceof AppError
 }
@@ -45,5 +54,6 @@ module.exports = {
     DuplicateResourceError,
     ResourceNotFoundError,
     IncorrectAttemptError,
+    ExpectedAppError,
     isAppError
 }

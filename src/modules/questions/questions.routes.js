@@ -3,19 +3,19 @@ const logger = require('@shared/logger')
 
 const routes = Router();
 
-const { getQuestion, handleMultipleChoiceAttempt, handleCodingAttempt, getAllQuestions } = require('./questions.module');
+const { getQuestion, getAllQuestions } = require('./questions.module');
 const { authMiddleware, requireAdmin } = require('@shared/auth');
 const { snakeToCamel } = require('@shared/utils');
+const { handleAttempt } = require('./attempts.module');
 
 
 routes.get('/current', authMiddleware, async (req, res) => {
-    const { id } = req?.team
-    console.debug('get-question', { teamId: id });
-
-    const { attemptId, question, questionType, startedAt } = await getQuestion(id);
-    console.debug('question', { attemptId, question, questionId: question?.id, questionType, startedAt });
-    return res.json(snakeToCamel({ attemptId, question, questionType, startedAt }));
+    const { id, onSection } = req?.team
+    logger.info('questions.get.current', { teamId: id });
+    const { attemptData, questionData } = await getQuestion(id, onSection);
+    return res.json(snakeToCamel({ attemptData, questionData }));
 });
+
 
 
 routes.get('/list', authMiddleware, async (req, res) => {
@@ -24,24 +24,29 @@ routes.get('/list', authMiddleware, async (req, res) => {
 });
 
 
+
 routes.post('/attempt', authMiddleware, async (req, res) => {
     const { id } = req?.team
-    const { attemptId, questionId, questionType } = req.body
-    logger.debug('attempt-question', { teamId: id, attemptId, questionId, questionType });
+    const { attemptData, questionData } = req.body
+    logger.debug('questions.attempt', { teamId: id, attemptData });
 
-    if (questionType === 'multiple') {
-        console.debug('attempt-question-multiple');
-        const { selectedAnswer } = req.body
-        const { attemptId: newAttemptId, score } = await handleMultipleChoiceAttempt({ teamId: id, questionId, attemptId, selectedAnswer })
-        return res.json(snakeToCamel({ attemptId: newAttemptId, questionType: 'coding', score }));
+    const { id: questionId } = questionData
+    const { id: attemptId } = attemptData
+
+    if (questionData?.type === 'mcq') {
+        logger.info('questions.attempt.mcq');
+        const { submittedAnswers } = req.body
+        const { attemptData, questionData, score } = await handleAttempt({ teamId: id, questionId, attemptId, submissionData: { submissionType: 'mcq', submittedAnswers } })
+        return res.status(200).json(snakeToCamel({ attemptData, questionData, score }))
     }
-    if (questionType === 'coding') {
-        console.debug('attempt-question-coding');
+
+    if (questionData?.type === 'coding') {
+        logger.info('questions.attempt.coding');
         const { submittedCode } = req.body
-        const { output, attemptId: newAttemptId, question, questionType } = await handleCodingAttempt({ teamId: id, questionId, attemptId, submittedCode })
-        return res.json(snakeToCamel({ output, attemptId: newAttemptId, question, questionType }));
-
+        const { attemptData, questionData, score, output } = await handleAttempt({ teamId: id, questionId, attemptId, submissionData: { submissionType: 'coding', submittedCode } })
+        return res.status(200).json(snakeToCamel({ attemptData, questionData, score, output }))
     }
+
 });
 
 

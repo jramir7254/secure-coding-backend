@@ -16,33 +16,33 @@ function signToken(claims) {
 
 
 function authMiddleware(req, res, next) {
-    logger.info("using.auth_middleware")
+    logger.info("middleware.team")
     const authHeader = req.headers['authorization'];
 
     const token = authHeader && authHeader.split(' ')[1];
     if (!token) {
-        logger.error('token.missing');
+        logger.error('middleware.token.missing');
         return res.status(401).json({ success: false, error: 'Access denied. No token provided.' });
     }
 
     try {
         const decoded = jswt.verify(token, jwt.secret);
         req.team = decoded; // attach user info (id, email, etc.)
-        logger.debug('decoded.user', { decoded })
+        // logger.debug('decoded.user', { decoded })
 
         next();
     } catch (err) {
-        logger.error('token.invalid', err.message);
+        logger.error('middleware.token.invalid', err.message);
         res.status(403).json({ success: false, error: 'Invalid or expired token.' });
     }
 }
 
 
 function requireAdmin(req, res, next) {
-    logger.info("using.require_admin")
+    logger.info("middleware.admin")
 
     if (!req.team) {
-        logger.error('team.missing');
+        logger.error('middleware.team.missing');
         return res.status(401).json({ success: false, error: 'Access denied. No user provided.' });
     }
 
@@ -53,7 +53,7 @@ function requireAdmin(req, res, next) {
         }
         next();
     } catch (err) {
-        logger.error("team.unauthorized")
+        logger.error("middleware.team.unauthorized")
         res.status(403).json({ success: false, message: 'Unauthorized action!' });
     }
 }

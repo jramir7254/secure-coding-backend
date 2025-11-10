@@ -44,16 +44,27 @@ async function init() {
     await db.exec(TABLES.QUESTIONS);
     logger.info('table.created', { tableName: 'questions' });
 
+    await db.exec(TABLES.CODE_FILES);
+    logger.info('table.created', { tableName: 'code_files' });
+
 
     await db.exec(TABLES.QUESTION_ATTEMPTS);
     logger.info('table.created', { tableName: 'question_attempts' });
 
 
-    await db.exec(TABLES.MULTIPLE_CHOICE_ATTEMPTS);
-    logger.info('table.created', { tableName: 'multiple_choice_attempts' });
+    await db.exec(TABLES.CEQ_ATTEMPTS);
+    logger.info('table.created', { tableName: 'mcq_attempts' });
 
 
-    await db.exec(TABLES.CODING_ATTEMPTS);
+    await db.exec(TABLES.CEQ_ANSWERS);
+    logger.info('table.created', { tableName: 'mcq_answers' });
+
+
+    await db.exec(TABLES.OEQ_ANSWERS);
+    logger.info('table.created', { tableName: 'coding_answers' });
+
+
+    await db.exec(TABLES.OEQ_ATTEMPTS);
     logger.info('table.created', { tableName: 'coding_attempts' });
 
 
@@ -89,28 +100,93 @@ async function clear() {
 async function reset() {
     await clear()
     await init()
+    // logger.warn('skipping questions seed');
+
     await seed()
     logger.success('database.reset');
 
 }
 
+function strip(code) {
+    // Split into lines and remove leading/trailing blank lines
+    const lines = code.replace(/^\n+|\n+$/g, '').split('\n');
+
+    // Find the minimum indentation (ignore empty lines)
+    const indents = lines
+        .filter(line => line.trim())
+        .map(line => line.match(/^[ \t]*/)[0].length);
+
+    const minIndent = Math.min(...indents);
+
+    // Remove the minimum indentation from each line
+    return lines.map(line => line.slice(minIndent)).join('\n');
+}
+
 /** 🔹 Seed initial data */
 async function seed() {
     const db = await connect();
+
+
     const stmt = await db.prepare(
-        `INSERT INTO questions (code, answer, editable_ranges, explanation, expected_output)
-     VALUES (?, ?, ?, ?, ?)`
+        `INSERT INTO questions (title, type, difficulty, explanation, tags, description)
+     VALUES (?, ?, ?, ?, ?, ?)`
     );
 
     for (const q of TABLES.QUESTION_ROWS) {
-        await stmt.run(q.code, q.answer, JSON.stringify(q.editable_ranges), q.explanation, q.expected_output);
+        await stmt.run(q.title, q.type, q.difficulty, q.explanation, JSON.stringify(q.tags), q.description);
     }
 
     await stmt.finalize();
     logger.info('table.seeded', { table: 'questions', entries: TABLES.QUESTION_ROWS.length });
 
-    await db.run('INSERT INTO teams (team_name, access_code) VALUES ("Admin", "D3V")')
-    logger.info('table.seeded', { table: 'admin', entries: 1 });
+    //===============================================================================
+
+    const stmt2 = await db.prepare(
+        `INSERT INTO code_files (question_id, name, editable_ranges, language, value, display_order)
+     VALUES (?, ?, ?, ?, ?, ?)`
+    );
+
+    for (const q of TABLES.CODE_FILES_ROWS) {
+        await stmt2.run(q.question_id, q.name, JSON.stringify(q.editable_ranges), q.language, strip(q.value), q.display_order);
+    }
+
+    await stmt2.finalize();
+    logger.info('table.seeded', { table: 'code_files', entries: TABLES.CODE_FILES_ROWS.length });
+
+
+
+    //===============================================================================
+
+    const stmt3 = await db.prepare(
+        `INSERT INTO mcq_answers (question_id, answers)
+     VALUES (?, ?)`
+    );
+
+    for (const q of TABLES.CEQ_ANSWERS_ROWS) {
+        await stmt3.run(q.question_id, JSON.stringify(q.answers));
+    }
+
+    await stmt3.finalize();
+    logger.info('table.seeded', { table: 'mcq_answers', entries: TABLES.CEQ_ANSWERS_ROWS.length });
+
+
+
+    const stmt4 = await db.prepare(
+        `INSERT INTO coding_answers (question_id, input, expected_output)
+     VALUES (?, ?, ?)`
+    );
+
+    for (const q of TABLES.OEQ_ANSWERS_ROWS) {
+        await stmt4.run(q.question_id, JSON.stringify(q.input), q.expected_output);
+    }
+
+    await stmt4.finalize();
+    logger.info('table.seeded', { table: 'coding_answers', entries: TABLES.OEQ_ANSWERS_ROWS.length });
+
+
+
+    // await db.run('INSERT INTO teams (team_name, join_code, game_id) VALUES ("Admin", "D3V", 0)')
+    // logger.info('table.seeded', { table: 'admin', entries: 1 });
 
 
 

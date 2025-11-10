@@ -10,6 +10,7 @@ const authRoutes = require('./modules/auth/auth.routes')
 const questionRoutes = require('./modules/questions/questions.routes')
 const adminRoutes = require('./modules/admin/admin.routes')
 const gameRoutes = require('./modules/games/games.routes');
+const logger = require('@shared/logger');
 
 const app = express();
 app.use(cors());
@@ -44,7 +45,7 @@ app.use('/admin', authMiddleware, requireAdmin, adminRoutes)
 app.use('/games', gameRoutes)
 
 app.use((err, req, res, next) => {
-    console.error('🔥 Error:', err);
+    logger.error('error', { err });
     const status = err.status || 500;
     const message = err.message || 'Internal Server Error';
     res.status(status).json({ success: false, message });

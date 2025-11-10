@@ -7,8 +7,8 @@ const { getIO } = require('../socket');
 
 async function getCurrentGame() {
     const db = await connect();
-    const row = await db.get('SELECT * FROM games WHERE is_current = 1');
-    logger.debug('has_current_game?', row)
+    const row = await db.get('SELECT * FROM games WHERE is_active = 1');
+    logger.info('games.get.current', { game: row ? row?.id : null })
 
     return row ? row : null
 }
@@ -16,10 +16,7 @@ async function getCurrentGame() {
 
 async function endCurrentGame() {
     const db = await connect();
-
-    await db.run("UPDATE games SET ended_at = datetime('now', 'localtime') WHERE is_current = 1");
-
-
+    await db.run("UPDATE games SET ended_at = datetime('now', 'localtime') WHERE is_active = 1");
 }
 
 
@@ -53,7 +50,7 @@ WHERE qa.team_id = ?;
 
 async function closeCurrentGame() {
     const db = await connect();
-    await db.run("UPDATE games SET is_current = 0 WHERE is_current = 1");
+    await db.run("UPDATE games SET is_active = 0 WHERE is_active = 1");
 
     const cg = await getCurrentGame()
 
@@ -69,7 +66,7 @@ async function createGame(gameOptions) {
 
     const db = await connect();
     const { lastID } = await db.run(
-        'INSERT INTO games (max_teams, time_limit, is_current) VALUES (?,?,1)',
+        'INSERT INTO games (max_teams, time_limit, is_active) VALUES (?,?,1)',
         [maxTeams, timeLimit]
     );
     console.debug('game_inserted', { lastID })
@@ -80,7 +77,7 @@ async function createGame(gameOptions) {
 
 async function getPastGames() {
     const db = await connect();
-    const rows = await db.all('SELECT g.*, (SELECT COUNT(*) FROM teams WHERE game_id = g.id) AS teamsPlayed FROM games g WHERE g.ended_at IS NOT NULL AND g.is_current = 0');
+    const rows = await db.all('SELECT g.*, (SELECT COUNT(*) FROM teams WHERE game_id = g.id) AS teamsPlayed FROM games g WHERE g.ended_at IS NOT NULL AND g.is_active = 0');
     logger.debug('num_past_games', rows ? rows.length : 0)
     return rows
 }
@@ -93,7 +90,7 @@ async function hasCurrentGame() {
 const getTopTeamsFromAllGames = async () => {
     const db = await connect()
     const l = await db.all(
-        "SELECT t.team_name, team_id, SUM (points) as points FROM leaderboard LEFT JOIN teams t ON t.id = team_id GROUP BY team_id ORDER BY points DESC LIMIT 3"
+        "SELECT t.team_name, team_id, total_points FROM leaderboard LEFT JOIN teams t ON t.id = team_id GROUP BY team_id ORDER BY total_points DESC LIMIT 3"
     );
     logger.debug('all teams', l)
     return l
@@ -113,7 +110,7 @@ const getTeamsInCurrentGame = async () => {
 
 async function isCurrentGameFull() {
     const db = await connect();
-    const { id, max_teams } = await db.get('SELECT id, max_teams FROM games WHERE is_current = 1');
+    const { id, max_teams } = await db.get('SELECT id, max_teams FROM games WHERE is_active = 1');
     const count = await db.get('SELECT COUNT (*) FROM teams WHERE game_id = ?', [id])
     logger.debug('Count', { count: count['COUNT (*)'] })
 
@@ -124,15 +121,15 @@ async function isCurrentGameFull() {
 
 async function startCurrentGame() {
     const db = await connect();
-    await db.run("UPDATE games SET started_at = datetime('now', 'localtime') WHERE is_current = 1");
+    await db.run("UPDATE games SET started_at = datetime('now', 'localtime') WHERE is_active = 1");
 }
 
 async function getLeaderboard() {
-    logger.info('geting lead')
+    logger.info('leaderboard.get')
     const cg = await getCurrentGame()
     const db = await connect();
-    const l = await db.all("SELECT t.team_name, team_id, SUM (points) as points FROM leaderboard LEFT JOIN teams t ON t.id = team_id WHERE t.game_id = ? GROUP BY team_id", [cg?.id]);
-    logger.debug('lead', { count: l.length })
+    const l = await db.all("SELECT t.team_name, team_id, total_points FROM leaderboard LEFT JOIN teams t ON t.id = team_id WHERE t.game_id = ?", [cg?.id]);
+    logger.info('leaderboard.get.count', { count: l.length })
 
     return l
 }

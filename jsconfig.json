@@ -1,18 +1,26 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
-    "target": "ES2022",
-    "allowJs": true,
-    "checkJs": true,
     "baseUrl": ".",
     "paths": {
-      "*": ["node_modules/*"],
+      "*": ["node_modules/*", "types/*"],
       "@root": ["."],
       "@middleware/*": ["src/middleware/*"],
       "@shared/*": ["src/shared/*"],
       "@config/*": ["src/config/*"],
       "@src/*": ["src/*"]
-    }
+    },
+    "module": "commonjs",
+    "target": "ES2022",
+    "allowJs": true,
+    "checkJs": true,
+    "esModuleInterop": true,
+    "lib": ["ES2022"],
+    "typeRoots": ["./types/**/*.d.ts", "./node_modules/@types"],
+    "types": ["node"]
   },
-  "exclude": ["node_modules", "**/node_modules/*"]
+  "include": [
+    "src/**/*.js", // Include your JavaScript source files
+    "types/**/*.d.ts" // Include your custom .d.ts files
+  ],
+  "exclude": ["node_modules", "dist"]
 }

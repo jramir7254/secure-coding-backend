@@ -47,7 +47,7 @@ const register = async (teamData) => {
     logger.info('generated access code', { accessCode })
 
     const { lastID } = await db.run(
-        'INSERT INTO teams (team_name, game_id, access_code) VALUES(?,?,?)',
+        'INSERT INTO teams (team_name, game_id, join_code) VALUES(?,?,?)',
         [teamName, currentGame.id, accessCode]
     )
 
@@ -61,6 +61,7 @@ const register = async (teamData) => {
         id: lastID,
         teamName,
         gameId: currentGame.id,
+        onSection: 'mcq',
         accessCode,
         isAdmin: false,
     })
@@ -71,20 +72,37 @@ const register = async (teamData) => {
 
 
 const login = async ({ accessCode }) => {
+
+
+    if (accessCode === admin.code) {
+        logger.debug('auth.login.is_admin', accessCode === admin.code)
+
+        return signToken({
+            id: -1,
+            teamName: admin,
+            accessCode,
+            gameId: 0,
+            isAdmin: true
+        })
+    }
+
+
+
     const db = await connect()
-    const row = await db.get('SELECT * FROM teams WHERE access_code = ?', [accessCode])
+    const row = await db.get('SELECT * FROM teams WHERE join_code = ?', [accessCode])
 
     if (!row) throw new ResourceNotFoundError('Team not found', 'users', accessCode)
 
     logger.debug('auth.login.found', row)
-    logger.debug('auth.login.is_admin', accessCode === admin.code)
 
     const token = signToken({
         id: row.id,
         teamName: row.team_name,
         accessCode,
+        onSection: row.on_section,
+
         gameId: row.game_id,
-        isAdmin: accessCode === admin.code
+        isAdmin: false
     })
 
     return token
