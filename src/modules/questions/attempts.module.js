@@ -119,22 +119,27 @@ async function handleCodingAttempt({ teamId, attemptId, questionId, submittedCod
     const db = await connect();
     await db.run('INSERT INTO coding_attempts (attempt_id, submitted_code) VALUES (?,?)', [attemptId, "submittedCode"])
 
-    const content = submittedCode.reduce((a, c) => {
-        return a.concat(c.value)
-    }, "")
+    const nonJavaFiles = submittedCode.filter(f => !f.uri.endsWith('java'))
 
-    logger.debug('content', { content })
+    logger.debug('nonJavaFiles', { nonJavaFiles })
 
+    const files = [
+        {
+            name: 'Main',
+            content: mergeJavaFiles(submittedCode)
+        }
+    ]
+
+
+
+    nonJavaFiles.forEach(n => files.push({ name: n.uri.split('/').pop(), content: n.value }))
+
+    logger.debug('files', { files })
 
     const { data } = await pistonApi.post('', {
         language: "java",
         version: "15.0.2",
-        files: [
-            {
-                name: 'ShoppingCart.java',
-                content
-            }
-        ],
+        files,
         compile_timeout: 10000,
         run_timeout: 5000,
         compile_memory_limit: -1,
@@ -145,7 +150,7 @@ async function handleCodingAttempt({ teamId, attemptId, questionId, submittedCod
     });
     let { output } = data?.run
 
-    output = output.replace(/^"+|"+$/g, "").trim().replace(/^\s+/gm, "");
+    // output = output.replace(/^"+|"+$/g, "").trim().replace(/^\s+/gm, "");
 
 
     logger.debug('Output', { output })
@@ -170,6 +175,46 @@ async function handleCodingAttempt({ teamId, attemptId, questionId, submittedCod
     return { timeCompleted, count: count['COUNT (*)'], output }
 
 }
+
+
+function mergeJavaFiles(fileObjects) {
+    const imports = new Set();
+    const classContents = [];
+
+    for (const { uri, value } of fileObjects) {
+        if (!uri.endsWith('java')) continue
+        let code = value.trim();
+
+        // Collect imports
+        const importMatches = code.match(/import\s+[\w.*]+;\s*/g);
+        if (importMatches) {
+            importMatches.forEach(i => imports.add(i.trim()));
+            code = code.replace(/import\s+[\w.*]+;\s*/g, '');
+        }
+
+        // Remove package declarations
+        code = code.replace(/package\s+[\w.]+;\s*/g, '');
+
+        classContents.push({ uri, code });
+    }
+
+    // Detect the file with `public static void main`
+    // classContents.sort((a, b) => {
+    //     const aHasMain = /public\s+static\s+void\s+main\s*\(/.test(a.code);
+    //     const bHasMain = /public\s+static\s+void\s+main\s*\(/.test(b.code);
+    //     return aHasMain ? 1 : bHasMain ? -1 : 0; // push main class last
+    // });
+
+    // Combine everything
+    const merged = `${Array.from(imports).join('\n')}\n\n` +
+        classContents.map(f => `// ---- From ${f.uri} ----\n${f.code}`).join('\n\n');
+
+
+    logger.pretty(merged)
+
+    return merged.trim();
+}
+
 
 
 module.exports = { handleMultipleChoiceAttempt, handleCodingAttempt, handleAttempt }

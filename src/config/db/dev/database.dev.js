@@ -5,10 +5,14 @@ const { Database } = require('sqlite3');
 const { open } = require('sqlite');
 const TABLES = require('./tables.dev');
 const logger = require('@shared/logger');
+const tables = require('./tables.json');
+const codeFiles = require('./code-files.json');
+const questions = require('./questions.json');
 
 const dbPath = path.resolve(__dirname, 'dev.db');
 
-// We'll store our connection here
+
+
 let db;
 
 /** 
@@ -30,51 +34,24 @@ async function connect() {
     return db;
 }
 
+
+
+
 /** 🔹 Initialize schema */
 async function init() {
     const db = await connect();
 
-    await db.exec(TABLES.GAMES);
-    logger.info('table.created', { tableName: 'games' });
 
-    await db.exec(TABLES.TEAMS);
-    logger.info('table.created', { tableName: 'teams' });
-
-
-    await db.exec(TABLES.QUESTIONS);
-    logger.info('table.created', { tableName: 'questions' });
-
-    await db.exec(TABLES.CODE_FILES);
-    logger.info('table.created', { tableName: 'code_files' });
-
-
-    await db.exec(TABLES.QUESTION_ATTEMPTS);
-    logger.info('table.created', { tableName: 'question_attempts' });
-
-
-    await db.exec(TABLES.CEQ_ATTEMPTS);
-    logger.info('table.created', { tableName: 'mcq_attempts' });
-
-
-    await db.exec(TABLES.CEQ_ANSWERS);
-    logger.info('table.created', { tableName: 'mcq_answers' });
-
-
-    await db.exec(TABLES.OEQ_ANSWERS);
-    logger.info('table.created', { tableName: 'coding_answers' });
-
-
-    await db.exec(TABLES.OEQ_ATTEMPTS);
-    logger.info('table.created', { tableName: 'coding_attempts' });
-
-
-    await db.exec(TABLES.LEADERBOARD);
-    logger.info('table.created', { tableName: 'leaderboard' });
-
-
+    for (const { name, query } of tables) {
+        await db.exec(query);
+        logger.info('table.created', { tableName: name });
+    }
 
     logger.success('tables.created');
 }
+
+
+
 
 /** 🔹 Reset database */
 async function clear() {
@@ -97,6 +74,8 @@ async function clear() {
 
 }
 
+
+
 async function reset() {
     await clear()
     await init()
@@ -106,6 +85,10 @@ async function reset() {
     logger.success('database.reset');
 
 }
+
+
+
+
 
 function strip(code) {
     // Split into lines and remove leading/trailing blank lines
@@ -128,12 +111,12 @@ async function seed() {
 
 
     const stmt = await db.prepare(
-        `INSERT INTO questions (title, type, difficulty, explanation, tags, description)
-     VALUES (?, ?, ?, ?, ?, ?)`
+        `INSERT INTO questions (title, type, difficulty, tags, description)
+     VALUES (?, ?, ?, ?, ?)`
     );
 
-    for (const q of TABLES.QUESTION_ROWS) {
-        await stmt.run(q.title, q.type, q.difficulty, q.explanation, JSON.stringify(q.tags), q.description);
+    for (const q of questions) {
+        await stmt.run(q.title, q.type, q.difficulty, JSON.stringify(q.tags), q.description);
     }
 
     await stmt.finalize();
@@ -146,8 +129,8 @@ async function seed() {
      VALUES (?, ?, ?, ?, ?, ?)`
     );
 
-    for (const q of TABLES.CODE_FILES_ROWS) {
-        await stmt2.run(q.question_id, q.name, JSON.stringify(q.editable_ranges), q.language, strip(q.value), q.display_order);
+    for (const q of codeFiles) {
+        await stmt2.run(q.question_id, q.name, JSON.stringify(q.editable_ranges), q.language, (q.value), q.display_order);
     }
 
     await stmt2.finalize();

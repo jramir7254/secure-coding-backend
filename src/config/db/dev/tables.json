@@ -1,0 +1,42 @@
+[
+  {
+    "name": "games",
+    "query": "CREATE TABLE IF NOT EXISTS games (\n    id INTEGER PRIMARY KEY AUTOINCREMENT,\n    max_teams INTEGER,\n    time_limit INTEGER,\n    is_active INTEGER CHECK (is_active IN (0, 1)),\n    started_at TEXT,\n    ended_at TEXT\n);"
+  },
+  {
+    "name": "teams",
+    "query": "CREATE TABLE IF NOT EXISTS teams (\n    id INTEGER PRIMARY KEY AUTOINCREMENT,\n    game_id INTEGER NULLABLE,\n    team_name TEXT NOT NULL,\n    join_code TEXT NOT NULL UNIQUE,\n    on_section TEXT NOT NULL DEFAULT 'mcq',\n    joined_at TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP),\n    finished_at TEXT,\n    CONSTRAINT fk_teams_game FOREIGN KEY (game_id) REFERENCES games(id) ON DELETE CASCADE,\n    CONSTRAINT uq_team_name UNIQUE (team_name)\n);"
+  },
+  {
+    "name": "questions",
+    "query": "CREATE TABLE IF NOT EXISTS questions (\n    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,\n    title TEXT,\n    type TEXT NOT NULL,\n    difficulty TEXT NOT NULL,\n    tags TEXT NOT NULL DEFAULT '[]',\n    description TEXT,\n    explanation TEXT\n);"
+  },
+  {
+    "name": "code_files",
+    "query": "CREATE TABLE IF NOT EXISTS code_files (\n    id INTEGER PRIMARY KEY AUTOINCREMENT,\n    question_id INTEGER NOT NULL,\n    name TEXT NOT NULL,\n    language TEXT NOT NULL,\n    value TEXT NOT NULL,\n    editable_ranges TEXT,\n    display_order INTEGER,\n    CONSTRAINT fk_code_files_question FOREIGN KEY (question_id) REFERENCES questions(id) ON DELETE CASCADE,\n    CONSTRAINT uq_code_files_question_display_order UNIQUE (question_id, display_order)\n);"
+  },
+  {
+    "name": "question_attempts",
+    "query": "CREATE TABLE IF NOT EXISTS question_attempts (\n    id INTEGER PRIMARY KEY AUTOINCREMENT,\n    question_id INTEGER NOT NULL,\n    team_id INTEGER NOT NULL,\n    started_at TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP),\n    completed_at TEXT,\n    score INTEGER NOT NULL DEFAULT 0,\n    CONSTRAINT fk_qa_q_id FOREIGN KEY (question_id) REFERENCES questions(id) ON DELETE CASCADE,\n    CONSTRAINT fk_qa_t_id FOREIGN KEY (team_id) REFERENCES teams(id) ON DELETE CASCADE,\n    CONSTRAINT uq_attempt UNIQUE (question_id, team_id)\n);"
+  },
+  {
+    "name": "ceq_attempts",
+    "query": "CREATE TABLE IF NOT EXISTS mcq_attempts (\n    id INTEGER PRIMARY KEY AUTOINCREMENT,\n    attempt_id INTEGER,\n    submitted_answers TEXT,\n    created_at TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP),\n    CONSTRAINT fk_mca_qa_id FOREIGN KEY (attempt_id) REFERENCES question_attempts(id) ON DELETE CASCADE\n);"
+  },
+  {
+    "name": "oeq_attempts",
+    "query": "CREATE TABLE IF NOT EXISTS coding_attempts (\n    id INTEGER PRIMARY KEY AUTOINCREMENT,\n    attempt_id INTEGER,\n    submitted_code TEXT,\n    CONSTRAINT fk_ca_qa_id FOREIGN KEY (attempt_id) REFERENCES question_attempts(id) ON DELETE CASCADE\n);"
+  },
+  {
+    "name": "leaderboard",
+    "query": "CREATE TABLE IF NOT EXISTS leaderboard (\n    team_id INTEGER PRIMARY KEY,\n    total_points INTEGER NOT NULL DEFAULT 0,\n    updated_at TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP),\n    CONSTRAINT fk_leaderboard_team FOREIGN KEY (team_id) REFERENCES teams(id) ON DELETE CASCADE\n);"
+  },
+  {
+    "name": "ceq_answers",
+    "query": "CREATE TABLE IF NOT EXISTS mcq_answers (\n    id INTEGER PRIMARY KEY AUTOINCREMENT,\n    question_id INTEGER NOT NULL,\n    answers TEXT NOT NULL,\n    CONSTRAINT fk_mcq_answers_question FOREIGN KEY (question_id) REFERENCES questions(id) ON DELETE CASCADE,\n    CONSTRAINT uq_mcq_answers_question UNIQUE (question_id)\n);"
+  },
+  {
+    "name": "oeq_answers",
+    "query": "CREATE TABLE IF NOT EXISTS coding_answers (\n    id INTEGER PRIMARY KEY AUTOINCREMENT,\n    question_id INTEGER NOT NULL,\n    input TEXT NOT NULL,\n    expected_output TEXT,\n    CONSTRAINT fk_test_cases_question FOREIGN KEY (question_id) REFERENCES questions(id) ON DELETE CASCADE\n);"
+  }
+]

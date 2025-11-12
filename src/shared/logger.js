@@ -2,6 +2,7 @@
 const chalk = require('chalk');
 const stripAnsi = require('strip-ansi');
 const { colorize, color } = require('json-colorizer');
+const prettyjson = require('prettyjson');
 
 const isProd = process.env.NODE_ENV === 'production';
 
@@ -61,9 +62,14 @@ function printLog(level, message, meta = {}) {
 
     let output = base;
     if (Object.keys(meta).length) {
-        const pretty = ['debug', 'error'].includes(level);
-        const metaStr = colorize(meta, { colors, pretty, indent: pretty ? 4 : 0 });
-        output += ' ' + metaStr;
+        if (['debug', 'error', 'info'].includes(level)) {
+
+            const pretty = ['debug', 'error'].includes(level);
+            const metaStr = colorize(meta, { colors, pretty, indent: pretty ? 4 : 0 });
+            output += ' ' + metaStr;
+        } else if (['pretty'].includes(level)) {
+            console.log(prettyjson.render(output))
+        }
     }
 
     if (level === 'error') {
@@ -85,6 +91,7 @@ const logger = {
     success: (msg, meta) => printLog("success", msg, meta),
     info: (msg, meta) => printLog("info", msg, meta),
     debug: (msg, meta) => printLog("debug", msg, meta),
+    pretty: (msg, meta) => printLog("pretty", msg, meta),
 };
 
 module.exports = logger;
