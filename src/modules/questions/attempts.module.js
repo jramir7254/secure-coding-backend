@@ -40,7 +40,7 @@ async function handleAttempt({ teamId, attemptId, questionId, submissionData }) 
 async function handleMultipleChoiceAttempt({ teamId, attemptId, questionId, submittedAnswers }) {
 
     const db = await connect();
-    await db.run('INSERT INTO mcq_attempts (attempt_id, submitted_answers) VALUES (?,?)', [attemptId, submittedAnswers])
+    await db.run('INSERT INTO mcq_attempts (attempt_id, submitted_answers) VALUES (?,?)', [attemptId, JSON.stringify(submittedAnswers)])
     const questionAnswers = await db.get('SELECT * FROM mcq_answers WHERE question_id = ?', [questionId])
 
     logger.debug('questions.attempts.answers', { answers: JSON.parse(questionAnswers?.answers), submittedAnswers })

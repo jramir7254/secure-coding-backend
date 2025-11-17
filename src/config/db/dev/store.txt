@@ -1,0 +1,147 @@
+{
+    "title": "Compile-Time Detective",
+    "type": "mcq",
+    "mode": "select",
+    "intent": "concept",
+    "difficulty": "medium",
+    "tags": ["compile", "runtime"],
+    "description": "You’ve been provided with several Java source files.\n\n### Your Task\n\nExamine the given code files carefully and identify **which types of issues** are present in the project.  \nSome files may contain **one** type of error, while others may include **multiple**.\n\nSelect **all** applicable options for each file:\n\n- 🧱 Compile-Time Error\n- 💥 Runtime Error\n- 🧮 Logic Error\n- 🔐 Vulnerability\n\n---\n\n## ⚙️ Types of Errors & Examples\n\n### 🧱 1. Compile-Time Errors\n\nThese are **detected by the compiler** before the program runs.  \nThey prevent the code from compiling successfully.\n\n**Common causes:**\n\n- Missing semicolons or braces\n- Type mismatches\n- Undefined variables or methods\n- Syntax violations\n\n**Example:**\n\n```java\npublic class Demo {\n    public static void main(String[] args) {\n        int x = 5\n        System.out.println(x);\n    }\n}\n```\n\n🚫 _Error:_ `';' expected` → The compiler stops execution until the syntax is fixed.\n\n---\n\n### 💥 2. Runtime Errors\n\nThese occur **while the program is running**, after successful compilation.\nThey typically cause the program to crash or terminate abnormally.\n\n**Common causes:**\n\n- Division by zero\n- Null pointer access\n- Array index out of bounds\n- File not found\n\n**Example:**\n\n```java\npublic class CrashExample {\n    public static void main(String[] args) {\n        int[] numbers = {1, 2, 3};\n        System.out.println(numbers[5]); // Index out of bounds\n    }\n}\n```\n\n💥 _Error:_ `ArrayIndexOutOfBoundsException` → Program compiles but fails during execution.\n\n---\n\n### 🧮 3. Logic Errors\n\nThe program **runs without crashing**, but produces **incorrect or unintended results**\nbecause of a mistake in logic or algorithm design.\n\n**Common causes:**\n\n- Incorrect condition in an `if` or loop\n- Wrong arithmetic or comparison\n- Misplaced return statement\n\n**Example:**\n\n```java\npublic class LogicExample {\n    public static boolean isEven(int n) {\n        return n % 2 == 1; // ❌ Incorrect logic — should be n % 2 == 0\n    }\n\n    public static void main(String[] args) {\n        System.out.println(isEven(4)); // Prints false instead of true\n    }\n}\n```\n\n🧩 _Error:_ The code runs fine but produces the wrong output.\n\n---\n\n### 🔐 4. Vulnerabilities (Security Issues)\n\nThese are **weaknesses** in the code that could be exploited,\neven though the program may still compile and run correctly.\n\n**Common causes:**\n\n- Hardcoded credentials or secrets\n- Using insecure APIs (e.g., `Runtime.exec()` with user input)\n- Lack of input validation (SQL injection, command injection)\n- Weak encryption or no authentication\n\n**Example:**\n\n```java\npublic class VulnerableExample {\n    public static void main(String[] args) {\n        String userInput = \"../etc/passwd\"; // Imagine this comes from a form\n        Runtime.getRuntime().exec(\"cat \" + userInput); // 🚨 Command injection\n    }\n}\n```\n\n🔓 _Vulnerability:_ Unsanitized user input allows arbitrary command execution.\n\n---\n\n### ✅ Summary\n\n| Type                   | Detected When             | Program Runs? | Example Symptom    |\n| ---------------------- | ------------------------- | ------------- | ------------------ |\n| **Compile-Time Error** | During compilation        | ❌ No         | Code won’t compile |\n| **Runtime Error**      | During execution          | ⚠️ Crashes    | Exception thrown   |\n| **Logic Error**        | During execution          | ✅ Yes        | Wrong output       |\n| **Vulnerability**      | During or after execution | ✅ Yes        | Security risk      |\n\n---\n\n🧭 **Goal:**\nUse your detective skills to pinpoint which errors or bugs are present in each file — and select all that apply!\n"
+  },
+  {
+    "title": "Work Order #1427 — Checkout System Incident Report",
+    "type": "coding",
+    "difficulty": "medium",
+    "tags": "security, validation, business-logic",
+    "description": "\n### Overview\n\nQA testers have reported **intermittent crashes and incorrect totals** in the **Shopping Cart** module of our Convenience Store app.\nUnder certain input conditions, the application terminates abruptly or calculates totals incorrectly.\n\nReports indicate that this occurs when:\n\n- Customers enter **invalid or negative quantities**\n- They attempt to **add non-existent products** (e.g. item number out of range)\n- The user presses **Enter without typing anything**\n\nWe’ve attached the following files:\n\n- `ConvenienceStore.java`\n- `Product.java`\n- `ShoppingCart.java`\n- `CartItem.java`\n\n### Your Task\n\nInvestigate `ConvenienceStore.java`, specifically the section handling **user input and cart updates**.\n\nIdentify why the application crashes or shows incorrect behavior, then apply a **robust fix** that safely handles invalid user inputs **without changing the main business logic**.\n\n#### Requirements\n\nYour patch must:\n\n1. **Prevent runtime exceptions** when users enter:\n\n   - Non-numeric input (e.g. `\"apple\"` instead of `\"1\"`)\n   - Negative or zero quantities\n   - Invalid product indices (e.g. selecting item #10 when only 5 exist)\n   - Empty input lines\n\n2. **Gracefully handle bad input**\n   Print a clear warning message (e.g. `\"⚠️ Invalid input. Please try again.\"`) and re-prompt the user.\n3. **Maintain correct totals** for valid purchases only.\n4. **Do not modify** other source files (`Product.java`, `ShoppingCart.java`, etc.).\n5. Ensure that checkout (`0` to exit) still works correctly.\n\n### Context\n\nThe **Convenience Store** application simulates a basic point-of-sale system.\nIt lists available products, allows customers to select items by number, and keeps a running total in the cart.\n\nCurrently, invalid terminal input (especially strings or negative numbers) can cause the program to crash due to unhandled exceptions in `Scanner.nextInt()` or logic errors when indexing the product list.\n\n### Example of Problematic Behavior\n\n```\nSelect an item by number (or 0 to checkout): apple\nException in thread \"main\" java.util.InputMismatchException\n\nSelect an item by number (or 0 to checkout): 7\nIndexOutOfBoundsException: Index 6 out of bounds for length 5\n```\n\n### Deliverables\n\nYour fix should:\n\n- Eliminate all runtime crashes for invalid input\n- Display user-friendly error messages\n- Allow continuous input until checkout\n- Produce correct total at the end\n"
+  },
+  {
+    "title": "Compile-Time Detective PT2",
+    "type": "mcq",
+    "mode": "select",
+    "intent": "concept",
+    "difficulty": "easy",
+    "tags": ["logic", "runtime"],
+    "description": "You’ve been provided with several Java source files.\n\n### Your Task\n\nExamine the given code files carefully and identify **which types of issues** are present in the project.  \nSome files may contain **one** type of error, while others may include **multiple**.\n\nSelect **all** applicable options for each file:\n\n- 🧱 Compile-Time Error\n- 💥 Runtime Error\n- 🧮 Logic Error\n- 🔐 Vulnerability\n\n---\n\n## ⚙️ Types of Errors & Examples\n\n### 🧱 1. Compile-Time Errors\n\nThese are **detected by the compiler** before the program runs.  \nThey prevent the code from compiling successfully.\n\n**Common causes:**\n\n- Missing semicolons or braces\n- Type mismatches\n- Undefined variables or methods\n- Syntax violations\n\n**Example:**\n\n```java\npublic class Demo {\n    public static void main(String[] args) {\n        int x = 5\n        System.out.println(x);\n    }\n}\n```\n\n🚫 _Error:_ `';' expected` → The compiler stops execution until the syntax is fixed.\n\n---\n\n### 💥 2. Runtime Errors\n\nThese occur **while the program is running**, after successful compilation.\nThey typically cause the program to crash or terminate abnormally.\n\n**Common causes:**\n\n- Division by zero\n- Null pointer access\n- Array index out of bounds\n- File not found\n\n**Example:**\n\n```java\npublic class CrashExample {\n    public static void main(String[] args) {\n        int[] numbers = {1, 2, 3};\n        System.out.println(numbers[5]); // Index out of bounds\n    }\n}\n```\n\n💥 _Error:_ `ArrayIndexOutOfBoundsException` → Program compiles but fails during execution.\n\n---\n\n### 🧮 3. Logic Errors\n\nThe program **runs without crashing**, but produces **incorrect or unintended results**\nbecause of a mistake in logic or algorithm design.\n\n**Common causes:**\n\n- Incorrect condition in an `if` or loop\n- Wrong arithmetic or comparison\n- Misplaced return statement\n\n**Example:**\n\n```java\npublic class LogicExample {\n    public static boolean isEven(int n) {\n        return n % 2 == 1; // ❌ Incorrect logic — should be n % 2 == 0\n    }\n\n    public static void main(String[] args) {\n        System.out.println(isEven(4)); // Prints false instead of true\n    }\n}\n```\n\n🧩 _Error:_ The code runs fine but produces the wrong output.\n\n---\n\n### 🔐 4. Vulnerabilities (Security Issues)\n\nThese are **weaknesses** in the code that could be exploited,\neven though the program may still compile and run correctly.\n\n**Common causes:**\n\n- Hardcoded credentials or secrets\n- Using insecure APIs (e.g., `Runtime.exec()` with user input)\n- Lack of input validation (SQL injection, command injection)\n- Weak encryption or no authentication\n\n**Example:**\n\n```java\npublic class VulnerableExample {\n    public static void main(String[] args) {\n        String userInput = \"../etc/passwd\"; // Imagine this comes from a form\n        Runtime.getRuntime().exec(\"cat \" + userInput); // 🚨 Command injection\n    }\n}\n```\n\n🔓 _Vulnerability:_ Unsanitized user input allows arbitrary command execution.\n\n---\n\n### ✅ Summary\n\n| Type                   | Detected When             | Program Runs? | Example Symptom    |\n| ---------------------- | ------------------------- | ------------- | ------------------ |\n| **Compile-Time Error** | During compilation        | ❌ No         | Code won’t compile |\n| **Runtime Error**      | During execution          | ⚠️ Crashes    | Exception thrown   |\n| **Logic Error**        | During execution          | ✅ Yes        | Wrong output       |\n| **Vulnerability**      | During or after execution | ✅ Yes        | Security risk      |\n\n---\n\n🧭 **Goal:**\nUse your detective skills to pinpoint which errors or bugs are present in each file — and select all that apply!\n"
+  }
+
+
+
+
+
+
+  
+[
+  {
+    "question_id": 1,
+    "name": "README.md",
+    "language": "markdown",
+    "value": "## Compile-Time Detective\n\n### Scenario\nYou’ve been given a messy Java project full of unrelated classes and filler code.\n\nOne of the files contains a **compile-time error** that prevents the project from building.\n\n### Objective\nIdentify the **type** of error hidden in the code.\n\nYou don’t need to fix it — just select whether it’s a compile-time, runtime, logic, or vulnerability issue.\n\n> Hint: Read carefully! Some files include misleading or unused code.",
+    "editable_ranges": [],
+    "display_order": 0
+  },
+  {
+    "question_id": 1,
+    "name": "MainApp.java",
+    "language": "java",
+    "value": "package app;\nimport utils.Helper;\nimport services.Calculator;\nimport models.Record;\nimport java.util.*;\n\npublic class MainApp {\n    public static void main(String[] args) {\n        System.out.println(\"Starting App...\");\n\n        List<Record> records = new ArrayList<>();\n        for (int i = 0; i < 3; i++) {\n            records.add(new Record(\"user\" + i, i * 10));\n        }\n\n        Calculator calc = new Calculator();\n        try {\n            int sum = calc.sumValues(records);\n            System.out.println(\"Sum: \" + sum);\n        } catch (Exception e) {\n            System.out.println(\"Error computing sum: \" + e.getMessage());\n        }\n\n        System.out.println(Helper.renderBanner(\"Demo\"));\n        Helper.unusedUtility();\n    }\n}",
+    "editable_ranges": [],
+    "display_order": 1
+  },
+  {
+    "question_id": 1,
+    "name": "Record.java",
+    "language": "java",
+    "value": "package models;\n\npublic class Record {\n    private String id;\n    private int value;\n    private boolean active;\n\n    public Record(String id, int value) {\n        this.id = id;\n        this.value = value;\n        this.active = true;\n    }\n\n    public String getId() { return id; }\n    public int getValue() { return value; }\n    public boolean isActive() { return active; }\n\n    public void flipActive() {\n        this.active = !this.active;\n    }\n\n    public String dump() {\n        return id + \":\" + value + \":\" + (active ? \"A\" : \"I\");\n    }\n}",
+    "editable_ranges": [],
+    "display_order": 2
+  },
+  {
+    "question_id": 1,
+    "name": "Helper.java",
+    "language": "java",
+    "value": "package utils;\n\nimport java.util.*;\n\npublic class Helper {\n    public static String renderBanner(String title) {\n        StringBuilder sb = new StringBuilder();\n        sb.append(\"=== \").append(title).append(\" ===\");\n        return sb.toString();\n    }\n\n    public static void unusedUtility() {\n        for (int i = 0; i < 5; i++) {\n            System.out.println(\"noop \" + i);\n        }\n    }\n\n    public static int[] generateSequence(int n) {\n        int[] arr = new int[n];\n        for (int i = 0; i < n; i++) arr[i] = i;\n        return arr;\n    }\n}",
+    "editable_ranges": [],
+    "display_order": 3
+  },
+  {
+    "question_id": 1,
+    "name": "Calculator.java",
+    "language": "java",
+    "value": "package services;\n\nimport models.Record;\nimport java.util.*;\n\npublic class Calculator {\n    public int sumValues(List<Record> records) {\n        int total = 0;\n        for (Record r : records) {\n            if (r == null) continue;\n            total += r.getValue();\n        }\n        return total;\n    }\n\n    public int compute(int a, int b) {\n        if (a > b) {\n            a + b;  // <-- Compile-time error: statement has no effect\n        } else {\n            return a - b;\n        }\n    }\n\n    public String format(int v) {\n        return \"v=\" + v;\n    }\n}",
+    "editable_ranges": [],
+    "display_order": 4
+  },
+  {
+    "question_id": 1,
+    "name": "LegacyAdapter.java",
+    "language": "java",
+    "value": "package services;\n\npublic class LegacyAdapter {\n    public static void adapt() {\n        // Legacy placeholder\n    }\n}",
+    "editable_ranges": [],
+    "display_order": 5
+  },
+  {
+    "question_id": 1,
+    "name": "Main2.java",
+    "value": "package store;\n\nimport java.util.Arrays;\nimport java.util.List;\nimport java.util.Scanner;\n\npublic class KircleC {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n\n        // Sample products\n        List<Product> products = Arrays.asList(\n                new Product(\"Three dollar meal deal\", \"Something to get you by\", 1.50),\n                new Product(\"four dollar meal deal\", \"Something to get you going\", 1.50),\n                new Product(\"Five dollar meal deal\", \"Something to get you by\", 1.50));\n\n        ShoppingCart cart = new ShoppingCart();\n\n        System.out.println(\"Welcome to the Neighborhood Convenience Store!\");\n        boolean shopping = true;\n\n        while (shopping) {\n            System.out.println(\"\\nAvailable Products:\");\n            for (int i = 0; i < products.size(); i++) {\n                System.out.println((i + 1) + \". \" + products.get(i));\n            }\n\n            System.out.print(\"Select an item by number (or 0 to checkout): \");\n            int choice = scanner.nextInt();\n\n            if (choice == 0) {\n                shopping = false;\n                break;\n            }\n\n            if (choice > 0 && choice <= products.size()) {\n                System.out.print(\"Enter quantity: \");\n                int qty = scanner.nextInt();\n\n                Product selected = products.get(choice - 1);\n                cart.addItem(selected, qty);\n                System.out.println(qty + \" x \" + selected.getName() + \" added to your cart.\");\n            } else {\n                System.out.println(\"Invalid selection. Please try again.\");\n            }\n        }\n\n        // Checkout summary\n        cart.displayCart();\n        System.out.println(\"\\n💳 Thank you for shopping with us!\");\n        scanner.close();\n    }\n}",
+    "language": "java",
+    "editable_ranges": [],
+    "display_order": 6
+  },
+
+  {
+    "question_id": 2,
+    "name": "CartItem.java",
+    "language": "java",
+    "editable_ranges": [[17, 29]],
+    "display_order": 2,
+    "value": "\n// CartItem.java\n// ============================================================\n// Tiny class — simple enough but still hides small traps\n// ============================================================\n\npublic class CartItem {\n    private Product product;\n    private int qty;\n\n    public CartItem(Product product, int qty) {\n        this.product = product;\n        this.qty = qty;\n    }\n\n    /*** =========================== [EDIT BELOW ONLY] ===========================*/\n\n    public double getTotal() {\n        double price = product.getPrice();\n        double total = price * qty;\n        return total;\n    }\n\n    // unnecessary formatting method\n    private String randomPadding() {\n        return \"###\" + product.getName().length();\n    }\n\n    /*** =========================== [EDIT ABOVE ONLY] ===========================*/\n\n    @Override\n    public String toString() {\n        return product.getName() + \" x\" + qty + \" = $\" + String.format(\"%.2f\", getTotal()) + \" \" + randomPadding();\n    }\n}\n"
+  },
+  {
+    "question_id": 2,
+    "name": "instructions.md",
+    "language": "markdown",
+    "editable_ranges": [],
+    "display_order": 4,
+    "value": "\n## 🧾 Work Order #2047 — Convenience Store Cart System Bug Report\n\n### Overview\n\nQA testers have reported **intermittent crashes and incorrect totals** in the **Shopping Cart** module of our Convenience Store app.\nUnder certain input conditions, the application terminates abruptly or calculates totals incorrectly.\n\nReports indicate that this occurs when:\n\n- Customers enter **invalid or negative quantities**\n- They attempt to **add non-existent products** (e.g. item number out of range)\n- The user presses **Enter without typing anything**\n\nWe’ve attached the following files:\n\n- `ConvenienceStore.java`\n- `Product.java`\n- `ShoppingCart.java`\n- `CartItem.java`\n\n### Your Task\n\nInvestigate `ConvenienceStore.java`, specifically the section handling **user input and cart updates**.\n\nIdentify why the application crashes or shows incorrect behavior, then apply a **robust fix** that safely handles invalid user inputs **without changing the main business logic**.\n\n#### Requirements\n\nYour patch must:\n\n1. **Prevent runtime exceptions** when users enter:\n\n   - Non-numeric input (e.g. `\"apple\"` instead of `\"1\"`)\n   - Negative or zero quantities\n   - Invalid product indices (e.g. selecting item #10 when only 5 exist)\n   - Empty input lines\n\n2. **Gracefully handle bad input**\n   Print a clear warning message (e.g. `\"⚠️ Invalid input. Please try again.\"`) and re-prompt the user.\n3. **Maintain correct totals** for valid purchases only.\n4. **Do not modify** other source files (`Product.java`, `ShoppingCart.java`, etc.).\n5. Ensure that checkout (`0` to exit) still works correctly.\n\n### Context\n\nThe **Convenience Store** application simulates a basic point-of-sale system.\nIt lists available products, allows customers to select items by number, and keeps a running total in the cart.\n\nCurrently, invalid terminal input (especially strings or negative numbers) can cause the program to crash due to unhandled exceptions in `Scanner.nextInt()` or logic errors when indexing the product list.\n\n### Example of Problematic Behavior\n\n```\nSelect an item by number (or 0 to checkout): apple\nException in thread \"main\" java.util.InputMismatchException\n\nSelect an item by number (or 0 to checkout): 7\nIndexOutOfBoundsException: Index 6 out of bounds for length 5\n```\n\n### Deliverables\n\nYour fix should:\n\n- Eliminate all runtime crashes for invalid input\n- Display user-friendly error messages\n- Allow continuous input until checkout\n- Produce correct total at the end\n"
+  },
+  {
+    "question_id": 2,
+    "name": "KircleC.java",
+    "language": "java",
+    "editable_ranges": [[36, 47]],
+    "display_order": 0,
+    "value": "import java.util.Arrays;\nimport java.util.List;\nimport java.util.Scanner;\n\npublic class KircleC {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n\n        // Sample products\n        List<Product> products = Arrays.asList(\n            new Product(\"Three dollar meal deal\", \"Something to get you by\", 3.75),\n            new Product(\"four dollar meal deal\", \"Something to get you going\", 4.85),\n            new Product(\"Five dollar meal deal\", \"Something to get you rolling\", 5.35)\n        );\n\n        ShoppingCart cart = new ShoppingCart();\n\n        System.out.println(\"Welcome to the Neighborhood Convenience Store!\");\n        boolean shopping = true;\n\n        while (shopping) {\n            System.out.println(\"\\nAvailable Products:\");\n            for (int i = 0; i < products.size(); i++) {\n                System.out.println((i + 1) + \". \" + products.get(i));\n            }\n\n            System.out.print(\"Select an item by number (or 0 to checkout): \");\n            int choice = scanner.nextInt();\n\n            if (choice == 0) {\n                shopping = false;\n                break;\n            }\n\n            /*** =========================== [EDIT BELOW ONLY] ===========================*/\n\n            if (choice > 0 || choice <= products.size()) {\n                System.out.print(\"Enter quantity: \");\n                int qty = scanner.nextInt();\n\n                Product selected = products.get(choice - 1);\n                cart.addItem(selected, qty);\n                System.out.println(qty + \" x \" + selected.getName() + \" added to your cart.\");\n            } else {\n                System.out.println(\"Invalid selection. Please try again.\");\n            }\n\n            /*** =========================== [EDIT ABOVE ONLY] ===========================*/\n\n        }\n\n        // Checkout summary\n        cart.displayCart();\n        System.out.println(\"\\n💳 Thank you for shopping with us!\");\n        scanner.close();\n    }\n}\n"
+  },
+  {
+    "question_id": 2,
+    "name": "Product.java",
+    "language": "java",
+    "editable_ranges": [],
+    "display_order": 3,
+    "value": "\n// Product.java\n\n// ==========================================================\n// NOTE: apparently this was ported from a PHP script in 2016\n// No one remembers what half these methods were for\n// ==========================================================\n\nclass Product {\n    private String name;\n    private String description;\n    private double price;\n\n    public Product(String productName, double cost) {\n        this.name = productName;\n        this.price = cost;\n    }\n\n    public Product(String name, String description, double price) {\n        this.name = name;\n        this.description = description;\n        this.price = price;\n    }\n\n    public String getName() {\n        return name;\n    }\n\n    public String getDescription() {\n        return description;\n    }\n\n    // Legacy alias for getName() — not used anywhere\n    public String fetchLabel() {\n        return this.name.toUpperCase();\n    }\n\n    // BUG: accidentally truncates decimals sometimes\n    public double getPrice() {\n        return price; // supposed to round or format, but left raw\n    }\n\n    // Random unused method for students to chase\n    public void deprecatedDisplay() {\n        System.out.println(\"Product: \" + name + \" costs $\" + price);\n    }\n\n    @Override\n    public String toString() {\n        return name + \" - $\" + String.format(\"%.2f\", price);\n    }\n}\n"
+  },
+  {
+    "question_id": 2,
+    "name": "ShoppingCart.java",
+    "language": "java",
+    "editable_ranges": [[17, 37]],
+    "display_order": 1,
+    "value": "\nimport java.util.ArrayList;\nimport java.util.List;\n\n// ShoppingCart.java\n// ===========================================================\n// Contains half-implemented tax logic (ignore for now)\n// May behave incorrectly if negative quantities are added\n// ===========================================================\n\npublic class ShoppingCart {\n\n    private List<CartItem> items = new ArrayList<>();\n    private double totalCache = 0;\n\n    /*** =========================== [EDIT BELOW ONLY] ===========================*/\n\n    public void addItem(Product product, int quantity) {\n        items.add(new CartItem(product, quantity));\n\n        // BUG: totalCache may drift due to invalid data uses addition instead of multi\n        totalCache += product.getPrice() + quantity;\n    }\n\n    public double getTotal() {\n        // If items empty, sometimes returns stale totalCache\n        if (items.isEmpty()) {\n            return totalCache; // makes no sense, but left for \"reasons\"\n        }\n\n        double total = 0;\n        for (CartItem i : items) {\n            total += i.getTotal();\n        }\n        return total;\n    }\n\n    /*** =========================== [EDIT ABOVE ONLY] ===========================*/\n\n\n    public void displayCart() {\n        System.out.println(\"\\n🛒 Cart Contents:\");\n        if (items.size() == 0) {\n            System.out.println(\"Cart is mysteriously empty.\");\n        }\n\n        for (CartItem i : items) {\n            System.out.println(\" - \" + i);\n        }\n\n        System.out.println(\"Total: $\" + String.format(\"%.2f\", getTotal()));\n    }\n\n    // Legacy placeholder function that does nothing\n    public void backupCart() {\n        System.out.println(\"(Backup not implemented yet)\");\n    }\n}\n"
+  },
+  {
+    "question_id": 3,
+    "name": "PasswordValidator.java",
+    "language": "java",
+    "editable_ranges": [],
+    "display_order": 1,
+    "value": "import java.util.Scanner;\n\npublic class PasswordValidator {\n\tpublic static void main(String[] args) {\n\t\tScanner input = new Scanner(System.in);\n\t\tSystem.out.println(\"Enter your password:\");\n\t\tString password = input.nextLine();\n\t\tboolean isValid = validatePassword(password);\n\t\tSystem.out.println(\"Password validation: \" + isValid);\n\t}\n\n\t// Editable part\n\tpublic static boolean validatePassword(String password) {\n\t\tfor (int i = 0; i < password.length(); i++) {\n\t\t\tif (Character.isDigit(password.charAt(i))) {\n\t\t\t\tSystem.out.println(\"Password contains a number.\");\n\t\t\t}\n\t\t}\n\t\treturn false;\n\t}\n\n\tpublic static void printValidationStatus(boolean status) {\n\t\tif (status) {\n\t\t\tSystem.out.println(\"Password is valid.\");\n\t\t} else {\n\t\t\tSystem.out.println(\"Password is invalid.\");\n\t\t}\n\t}\n}\n"
+  },
+  {
+    "question_id": 3,
+    "name": "SumArray.java",
+    "language": "java",
+    "editable_ranges": [],
+    "display_order": 0,
+    "value": "public class SumArray {\n    public static void main(String[] args) {\n        int[] numbers = { 1, 2, 3, 4, 5 };\n        int sum = sumArray(numbers);\n        System.out.println(\"Sum of the array: \" + sum);\n    }\n\n    public static int sumArray(int[] numbers) {\n        int sum = 0;\n        for (int i = 0; i <= numbers.length; i++) {\n            sum += numbers[i];\n        }\n        return sum;\n    }\n\n    public static void displayResult(int result) {\n        System.out.println(\"Total sum: \" + result);\n    }\n}\n"
+  }
+]

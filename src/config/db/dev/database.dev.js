@@ -8,6 +8,7 @@ const logger = require('@shared/logger');
 const tables = require('./tables.json');
 const codeFiles = require('./code-files.json');
 const questions = require('./questions.json');
+const mcqAnswers = require('./mcq-answers.json');
 
 const dbPath = path.resolve(__dirname, 'dev.db');
 
@@ -141,12 +142,12 @@ async function seed() {
     //===============================================================================
 
     const stmt3 = await db.prepare(
-        `INSERT INTO mcq_answers (question_id, answers)
-     VALUES (?, ?)`
+        `INSERT INTO mcq_answers (question_id, choices, answers)
+     VALUES (?, ?, ?)`
     );
 
-    for (const q of TABLES.CEQ_ANSWERS_ROWS) {
-        await stmt3.run(q.question_id, JSON.stringify(q.answers));
+    for (const q of mcqAnswers) {
+        await stmt3.run(q.question_id, JSON.stringify(q.choices), JSON.stringify(q.answers));
     }
 
     await stmt3.finalize();

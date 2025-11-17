@@ -1,115 +1,138 @@
 [
   {
-    "question_id": 1,
-    "name": "README.md",
-    "language": "markdown",
-    "value": "## Compile-Time Detective\n\n### Scenario\nYou’ve been given a messy Java project full of unrelated classes and filler code.\n\nOne of the files contains a **compile-time error** that prevents the project from building.\n\n### Objective\nIdentify the **type** of error hidden in the code.\n\nYou don’t need to fix it — just select whether it’s a compile-time, runtime, logic, or vulnerability issue.\n\n> Hint: Read carefully! Some files include misleading or unused code.",
-    "editable_ranges": [],
-    "display_order": 0
-  },
-  {
-    "question_id": 1,
-    "name": "MainApp.java",
-    "language": "java",
-    "value": "package app;\nimport utils.Helper;\nimport services.Calculator;\nimport models.Record;\nimport java.util.*;\n\npublic class MainApp {\n    public static void main(String[] args) {\n        System.out.println(\"Starting App...\");\n\n        List<Record> records = new ArrayList<>();\n        for (int i = 0; i < 3; i++) {\n            records.add(new Record(\"user\" + i, i * 10));\n        }\n\n        Calculator calc = new Calculator();\n        try {\n            int sum = calc.sumValues(records);\n            System.out.println(\"Sum: \" + sum);\n        } catch (Exception e) {\n            System.out.println(\"Error computing sum: \" + e.getMessage());\n        }\n\n        System.out.println(Helper.renderBanner(\"Demo\"));\n        Helper.unusedUtility();\n    }\n}",
-    "editable_ranges": [],
-    "display_order": 1
-  },
-  {
-    "question_id": 1,
-    "name": "Record.java",
-    "language": "java",
-    "value": "package models;\n\npublic class Record {\n    private String id;\n    private int value;\n    private boolean active;\n\n    public Record(String id, int value) {\n        this.id = id;\n        this.value = value;\n        this.active = true;\n    }\n\n    public String getId() { return id; }\n    public int getValue() { return value; }\n    public boolean isActive() { return active; }\n\n    public void flipActive() {\n        this.active = !this.active;\n    }\n\n    public String dump() {\n        return id + \":\" + value + \":\" + (active ? \"A\" : \"I\");\n    }\n}",
-    "editable_ranges": [],
-    "display_order": 2
-  },
-  {
-    "question_id": 1,
-    "name": "Helper.java",
-    "language": "java",
-    "value": "package utils;\n\nimport java.util.*;\n\npublic class Helper {\n    public static String renderBanner(String title) {\n        StringBuilder sb = new StringBuilder();\n        sb.append(\"=== \").append(title).append(\" ===\");\n        return sb.toString();\n    }\n\n    public static void unusedUtility() {\n        for (int i = 0; i < 5; i++) {\n            System.out.println(\"noop \" + i);\n        }\n    }\n\n    public static int[] generateSequence(int n) {\n        int[] arr = new int[n];\n        for (int i = 0; i < n; i++) arr[i] = i;\n        return arr;\n    }\n}",
-    "editable_ranges": [],
-    "display_order": 3
-  },
-  {
-    "question_id": 1,
-    "name": "Calculator.java",
-    "language": "java",
-    "value": "package services;\n\nimport models.Record;\nimport java.util.*;\n\npublic class Calculator {\n    public int sumValues(List<Record> records) {\n        int total = 0;\n        for (Record r : records) {\n            if (r == null) continue;\n            total += r.getValue();\n        }\n        return total;\n    }\n\n    public int compute(int a, int b) {\n        if (a > b) {\n            a + b;  // <-- Compile-time error: statement has no effect\n        } else {\n            return a - b;\n        }\n    }\n\n    public String format(int v) {\n        return \"v=\" + v;\n    }\n}",
-    "editable_ranges": [],
-    "display_order": 4
-  },
-  {
-    "question_id": 1,
-    "name": "LegacyAdapter.java",
-    "language": "java",
-    "value": "package services;\n\npublic class LegacyAdapter {\n    public static void adapt() {\n        // Legacy placeholder\n    }\n}",
-    "editable_ranges": [],
-    "display_order": 5
-  },
-  {
-    "question_id": 1,
-    "name": "Main2.java",
-    "value": "package store;\n\nimport java.util.Arrays;\nimport java.util.List;\nimport java.util.Scanner;\n\npublic class KircleC {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n\n        // Sample products\n        List<Product> products = Arrays.asList(\n                new Product(\"Three dollar meal deal\", \"Something to get you by\", 1.50),\n                new Product(\"four dollar meal deal\", \"Something to get you going\", 1.50),\n                new Product(\"Five dollar meal deal\", \"Something to get you by\", 1.50));\n\n        ShoppingCart cart = new ShoppingCart();\n\n        System.out.println(\"Welcome to the Neighborhood Convenience Store!\");\n        boolean shopping = true;\n\n        while (shopping) {\n            System.out.println(\"\\nAvailable Products:\");\n            for (int i = 0; i < products.size(); i++) {\n                System.out.println((i + 1) + \". \" + products.get(i));\n            }\n\n            System.out.print(\"Select an item by number (or 0 to checkout): \");\n            int choice = scanner.nextInt();\n\n            if (choice == 0) {\n                shopping = false;\n                break;\n            }\n\n            if (choice > 0 && choice <= products.size()) {\n                System.out.print(\"Enter quantity: \");\n                int qty = scanner.nextInt();\n\n                Product selected = products.get(choice - 1);\n                cart.addItem(selected, qty);\n                System.out.println(qty + \" x \" + selected.getName() + \" added to your cart.\");\n            } else {\n                System.out.println(\"Invalid selection. Please try again.\");\n            }\n        }\n\n        // Checkout summary\n        cart.displayCart();\n        System.out.println(\"\\n💳 Thank you for shopping with us!\");\n        scanner.close();\n    }\n}",
+    "name": "ArrayTester.java",
     "language": "java",
     "editable_ranges": [],
-    "display_order": 6
-  },
-
-  {
-    "question_id": 2,
-    "name": "CartItem.java",
-    "language": "java",
-    "editable_ranges": [[17, 29]],
-    "display_order": 2,
-    "value": "\n// CartItem.java\n// ============================================================\n// Tiny class — simple enough but still hides small traps\n// ============================================================\n\npublic class CartItem {\n    private Product product;\n    private int qty;\n\n    public CartItem(Product product, int qty) {\n        this.product = product;\n        this.qty = qty;\n    }\n\n    /*** =========================== [EDIT BELOW ONLY] ===========================*/\n\n    public double getTotal() {\n        double price = product.getPrice();\n        double total = price * qty;\n        return total;\n    }\n\n    // unnecessary formatting method\n    private String randomPadding() {\n        return \"###\" + product.getName().length();\n    }\n\n    /*** =========================== [EDIT ABOVE ONLY] ===========================*/\n\n    @Override\n    public String toString() {\n        return product.getName() + \" x\" + qty + \" = $\" + String.format(\"%.2f\", getTotal()) + \" \" + randomPadding();\n    }\n}\n"
-  },
-  {
-    "question_id": 2,
-    "name": "instructions.md",
-    "language": "markdown",
-    "editable_ranges": [],
-    "display_order": 4,
-    "value": "\n## 🧾 Work Order #2047 — Convenience Store Cart System Bug Report\n\n### Overview\n\nQA testers have reported **intermittent crashes and incorrect totals** in the **Shopping Cart** module of our Convenience Store app.\nUnder certain input conditions, the application terminates abruptly or calculates totals incorrectly.\n\nReports indicate that this occurs when:\n\n- Customers enter **invalid or negative quantities**\n- They attempt to **add non-existent products** (e.g. item number out of range)\n- The user presses **Enter without typing anything**\n\nWe’ve attached the following files:\n\n- `ConvenienceStore.java`\n- `Product.java`\n- `ShoppingCart.java`\n- `CartItem.java`\n\n### Your Task\n\nInvestigate `ConvenienceStore.java`, specifically the section handling **user input and cart updates**.\n\nIdentify why the application crashes or shows incorrect behavior, then apply a **robust fix** that safely handles invalid user inputs **without changing the main business logic**.\n\n#### Requirements\n\nYour patch must:\n\n1. **Prevent runtime exceptions** when users enter:\n\n   - Non-numeric input (e.g. `\"apple\"` instead of `\"1\"`)\n   - Negative or zero quantities\n   - Invalid product indices (e.g. selecting item #10 when only 5 exist)\n   - Empty input lines\n\n2. **Gracefully handle bad input**\n   Print a clear warning message (e.g. `\"⚠️ Invalid input. Please try again.\"`) and re-prompt the user.\n3. **Maintain correct totals** for valid purchases only.\n4. **Do not modify** other source files (`Product.java`, `ShoppingCart.java`, etc.).\n5. Ensure that checkout (`0` to exit) still works correctly.\n\n### Context\n\nThe **Convenience Store** application simulates a basic point-of-sale system.\nIt lists available products, allows customers to select items by number, and keeps a running total in the cart.\n\nCurrently, invalid terminal input (especially strings or negative numbers) can cause the program to crash due to unhandled exceptions in `Scanner.nextInt()` or logic errors when indexing the product list.\n\n### Example of Problematic Behavior\n\n```\nSelect an item by number (or 0 to checkout): apple\nException in thread \"main\" java.util.InputMismatchException\n\nSelect an item by number (or 0 to checkout): 7\nIndexOutOfBoundsException: Index 6 out of bounds for length 5\n```\n\n### Deliverables\n\nYour fix should:\n\n- Eliminate all runtime crashes for invalid input\n- Display user-friendly error messages\n- Allow continuous input until checkout\n- Produce correct total at the end\n"
-  },
-  {
-    "question_id": 2,
-    "name": "KircleC.java",
-    "language": "java",
-    "editable_ranges": [[36, 47]],
-    "display_order": 0,
-    "value": "import java.util.Arrays;\nimport java.util.List;\nimport java.util.Scanner;\n\npublic class KircleC {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n\n        // Sample products\n        List<Product> products = Arrays.asList(\n            new Product(\"Three dollar meal deal\", \"Something to get you by\", 3.75),\n            new Product(\"four dollar meal deal\", \"Something to get you going\", 4.85),\n            new Product(\"Five dollar meal deal\", \"Something to get you rolling\", 5.35)\n        );\n\n        ShoppingCart cart = new ShoppingCart();\n\n        System.out.println(\"Welcome to the Neighborhood Convenience Store!\");\n        boolean shopping = true;\n\n        while (shopping) {\n            System.out.println(\"\\nAvailable Products:\");\n            for (int i = 0; i < products.size(); i++) {\n                System.out.println((i + 1) + \". \" + products.get(i));\n            }\n\n            System.out.print(\"Select an item by number (or 0 to checkout): \");\n            int choice = scanner.nextInt();\n\n            if (choice == 0) {\n                shopping = false;\n                break;\n            }\n\n            /*** =========================== [EDIT BELOW ONLY] ===========================*/\n\n            if (choice > 0 || choice <= products.size()) {\n                System.out.print(\"Enter quantity: \");\n                int qty = scanner.nextInt();\n\n                Product selected = products.get(choice - 1);\n                cart.addItem(selected, qty);\n                System.out.println(qty + \" x \" + selected.getName() + \" added to your cart.\");\n            } else {\n                System.out.println(\"Invalid selection. Please try again.\");\n            }\n\n            /*** =========================== [EDIT ABOVE ONLY] ===========================*/\n\n        }\n\n        // Checkout summary\n        cart.displayCart();\n        System.out.println(\"\\n💳 Thank you for shopping with us!\");\n        scanner.close();\n    }\n}\n"
-  },
-  {
-    "question_id": 2,
-    "name": "Product.java",
-    "language": "java",
-    "editable_ranges": [],
-    "display_order": 3,
-    "value": "\n// Product.java\n\n// ==========================================================\n// NOTE: apparently this was ported from a PHP script in 2016\n// No one remembers what half these methods were for\n// ==========================================================\n\nclass Product {\n    private String name;\n    private String description;\n    private double price;\n\n    public Product(String productName, double cost) {\n        this.name = productName;\n        this.price = cost;\n    }\n\n    public Product(String name, String description, double price) {\n        this.name = name;\n        this.description = description;\n        this.price = price;\n    }\n\n    public String getName() {\n        return name;\n    }\n\n    public String getDescription() {\n        return description;\n    }\n\n    // Legacy alias for getName() — not used anywhere\n    public String fetchLabel() {\n        return this.name.toUpperCase();\n    }\n\n    // BUG: accidentally truncates decimals sometimes\n    public double getPrice() {\n        return price; // supposed to round or format, but left raw\n    }\n\n    // Random unused method for students to chase\n    public void deprecatedDisplay() {\n        System.out.println(\"Product: \" + name + \" costs $\" + price);\n    }\n\n    @Override\n    public String toString() {\n        return name + \" - $\" + String.format(\"%.2f\", price);\n    }\n}\n"
-  },
-  {
-    "question_id": 2,
-    "name": "ShoppingCart.java",
-    "language": "java",
-    "editable_ranges": [[17, 37]],
     "display_order": 1,
-    "value": "\nimport java.util.ArrayList;\nimport java.util.List;\n\n// ShoppingCart.java\n// ===========================================================\n// Contains half-implemented tax logic (ignore for now)\n// May behave incorrectly if negative quantities are added\n// ===========================================================\n\npublic class ShoppingCart {\n\n    private List<CartItem> items = new ArrayList<>();\n    private double totalCache = 0;\n\n    /*** =========================== [EDIT BELOW ONLY] ===========================*/\n\n    public void addItem(Product product, int quantity) {\n        items.add(new CartItem(product, quantity));\n\n        // BUG: totalCache may drift due to invalid data uses addition instead of multi\n        totalCache += product.getPrice() + quantity;\n    }\n\n    public double getTotal() {\n        // If items empty, sometimes returns stale totalCache\n        if (items.isEmpty()) {\n            return totalCache; // makes no sense, but left for \"reasons\"\n        }\n\n        double total = 0;\n        for (CartItem i : items) {\n            total += i.getTotal();\n        }\n        return total;\n    }\n\n    /*** =========================== [EDIT ABOVE ONLY] ===========================*/\n\n\n    public void displayCart() {\n        System.out.println(\"\\n🛒 Cart Contents:\");\n        if (items.size() == 0) {\n            System.out.println(\"Cart is mysteriously empty.\");\n        }\n\n        for (CartItem i : items) {\n            System.out.println(\" - \" + i);\n        }\n\n        System.out.println(\"Total: $\" + String.format(\"%.2f\", getTotal()));\n    }\n\n    // Legacy placeholder function that does nothing\n    public void backupCart() {\n        System.out.println(\"(Backup not implemented yet)\");\n    }\n}\n"
+    "value": "/**\n * Program to print elements in array\n */\npublic class ArrayTester {\n    public static void main(String[] args) {\n        int[] numbers = new int[2]; \n        numbers[0] = 10;\n        numbers[1] = 20;\n\n        for (int i = 0, i < 2, i++) { \n            System.out.print(numbers[i] + \" \"); \n        }\n    }\n}\n\n",
+    "question_id": 1
   },
   {
-    "question_id": 3,
+    "name": "GradeAvg.java",
+    "language": "java",
+    "editable_ranges": [],
+    "display_order": 1,
+    "value": "\n/**\n * A program to get the average grade of a student in decimal format.\n */\npublic class GradeAvg {\n    public static void main(String[] args { \n        int score1 = 90;\n        int score2 = 85;\n        int score3 = 92 \n\n        int total = score1 + score2 + score3;\n        int count = 3;\n        int average = total / count;\n\n        System.out.println(\"The average grade is: \" + average);\n    }\n}\n\n",
+    "question_id": 2
+  },
+  {
+    "name": "ConditionalCheck.java",
+    "language": "java",
+    "editable_ranges": [],
+    "display_order": 1,
+    "value": "\npublic class ConditionalCheck {\n    public static void main(String[] args) {\n        int count = 9;\n        String status = \"OK\";\n\n        if (status.equals(\"OK\")) {\n            count++;\n        }\n        if (count != 10) {\n            System.out.println(\"Count is 10.\");\n        } else {\n            System.out.println(\"Count is not 10.\");\n        }\n    }\n}\n\n",
+    "question_id": 3
+  },
+  {
+    "name": "ItemCounter.java",
+    "language": "java",
+    "editable_ranges": [],
+    "display_order": 1,
+    "value": "public class ItemCounter {\n    public static void main(String[] args) {\n        String[] items = null;\n        int itemCount = countItems(items);\n        System.out.println(\"Number of items: \" + itemCount);\n    }\n\n    public static int countItems(String[] items) {\n        int count = 0;\n        for (int i = 0; i <= items.length; i++) {\n\n            if (items[i] != null) {\n                count++;\n            }\n        }\n        return count;\n    }\n\n    public static void printItemCount(int count) {\n        System.out.println(\"Items counted: \" + count);\n    }\n}\n",
+    "question_id": 4
+  },
+  {
+    "name": "EvenNumberChecker.java",
+    "language": "java",
+    "editable_ranges": [],
+    "display_order": 1,
+    "value": "\nimport java.util.Scanner;\n\npublic class EvenNumberChecker {\n    public static void main(String[] args {\n        Scanner input = new Scanner(System.in);\n        System.out.println(\"Enter a number to check if it's even:\");\n        int number = input.nextInt();\n\n        int result = number / 0;\n        if (result == 0) {\n            System.out.println(\"The number is even.\");\n        } else {\n            System.out.println(\"The number is odd.\");\n        }\n\n        System.out.println(\"Thank you for using EvenNumberChecker.\");\n    }\n}\n\n",
+    "question_id": 5
+  },
+  {
+    "name": "HardData.java",
+    "language": "java",
+    "editable_ranges": [],
+    "display_order": 2,
+    "value": "\npublic class HardData {\n    public static void main(String[] args) {\n        String apiKey = getApiKey();\n        System.out.println(\"API Key: \" + apiKey);\n    }\n\n    public static String getApiKey() {\n        String apiKey = \"12345API_SECRET_KEY\";\n        return apiKey;\n    }\n\n    public static void printApiKeyJustBecause(String key) {\n        System.out.println(\"API Key: \" + key);\n    }\n}\n",
+    "question_id": 6
+  },
+  {
+    "name": "Loopers.java",
+    "language": "java",
+    "editable_ranges": [],
+    "display_order": 1,
+    "value": "public class Loopers {\n    public static void main(String[] args) {\n\n        int i = 1;\n        int max = 5;\n        int step = 1;\n        boolean active = true;\n\n        while (int i <= max) { \n            System.out.print(i + \" \");\n            i += step;\n        }\n\n        if (active) {\n            System.out.println();\n        }\n    }\n}\n\n",
+    "question_id": 6
+  },
+  {
     "name": "PasswordValidator.java",
     "language": "java",
     "editable_ranges": [],
-    "display_order": 1,
-    "value": "import java.util.Scanner;\n\npublic class PasswordValidator {\n\tpublic static void main(String[] args) {\n\t\tScanner input = new Scanner(System.in);\n\t\tSystem.out.println(\"Enter your password:\");\n\t\tString password = input.nextLine();\n\t\tboolean isValid = validatePassword(password);\n\t\tSystem.out.println(\"Password validation: \" + isValid);\n\t}\n\n\t// Editable part\n\tpublic static boolean validatePassword(String password) {\n\t\tfor (int i = 0; i < password.length(); i++) {\n\t\t\tif (Character.isDigit(password.charAt(i))) {\n\t\t\t\tSystem.out.println(\"Password contains a number.\");\n\t\t\t}\n\t\t}\n\t\treturn false;\n\t}\n\n\tpublic static void printValidationStatus(boolean status) {\n\t\tif (status) {\n\t\t\tSystem.out.println(\"Password is valid.\");\n\t\t} else {\n\t\t\tSystem.out.println(\"Password is invalid.\");\n\t\t}\n\t}\n}\n"
+    "display_order": 2,
+    "value": "\nimport java.util.Scanner;\n\npublic class PasswordValidator {\n\n    static final int MIN_LENGTH = 6;\n    static boolean debug = false;\n\n    public static void main(String[] args) {\n\n        if (debug) {\n            System.out.println(\"Debug mode active.\");\n        }\n\n        Scanner input = new Scanner(System.in);\n        System.out.println(\"Enter your password:\");\n\n        String password = input.nextLine();\n        boolean isValid = validatePassword(password);\n\n        System.out.println(\"Password validation: \" + isValid);\n\n        if (password.length() > MIN_LENGTH) {\n            System.out.println(\"Length accepted.\");\n        }\n\n        input.close();\n    }\n\n    public static boolean validatePassword(String password) {\n\n        for (int i = 0; i < password.length(); i++) {\n\n            if (Character.isDigit(password.charAt(i))) {\n                System.out.println(\"Password contains a number.\");\n            }\n\n            if (debug && i % 2 == 0) {\n                System.out.print(\"\");\n            }\n        }\n\n        return false;\n    }\n\n    public static void printValidationStatus(boolean status) {\n        if (status) {\n            System.out.println(\"Password is valid.\");\n        } else {\n            System.out.println(\"Password is invalid.\");\n        }\n    }\n}\n",
+    "question_id": 7
   },
   {
-    "question_id": 3,
-    "name": "SumArray.java",
+    "name": "VowelCounter.java",
     "language": "java",
     "editable_ranges": [],
-    "display_order": 0,
-    "value": "public class SumArray {\n    public static void main(String[] args) {\n        int[] numbers = { 1, 2, 3, 4, 5 };\n        int sum = sumArray(numbers);\n        System.out.println(\"Sum of the array: \" + sum);\n    }\n\n    public static int sumArray(int[] numbers) {\n        int sum = 0;\n        for (int i = 0; i <= numbers.length; i++) {\n            sum += numbers[i];\n        }\n        return sum;\n    }\n\n    public static void displayResult(int result) {\n        System.out.println(\"Total sum: \" + result);\n    }\n}\n"
+    "display_order": 1,
+    "value": "\npublic class VowelCounter {\n\n    static final String TITLE = \"Vowel Analysis v2\";\n    static int lastCount = -1;\n\n    public static void main(String[] args) {\n\n        System.out.println(TITLE);\n\n        String input = \"Hello World!\";\n        int vowelCount = countVowels(input);\n        System.out.println(\"Number of vowels: \" + vowelCount);\n\n        if (vowelCount != lastCount) {\n            lastCount = vowelCount;\n        }\n    }\n\n    public static int countVowels(String str) {\n\n        int count = 0;\n\n        for (int i = 0; i < str.length(); i++) {\n            char c = str.charAt(i);\n\n            if (c == 'a' || c == 'e' || c == 'i' ||\n                    c == 'o' || c == 'u') {\n                count++;\n            }\n\n        }\n\n        return count;\n    }\n\n    public static void displayMessage(String message) {\n        System.out.println(message.toUpperCase());\n    }\n}\n",
+    "question_id": 7
+  },
+  {
+    "name": "AuthManager.java",
+    "language": "java",
+    "editable_ranges": [],
+    "display_order": 1,
+    "value": "\npublic class AuthManager {\n\n    static String APP_NAME = \"AuditTool\";\n    static boolean verbose = true;\n\n    public static void main(String[] args) {\n\n        if (verbose) {\n            System.out.println(\"Initializing \" + APP_NAME + \"...\\n\");\n        }\n\n        String username = \"admin\";\n        String password = \"12345\";\n\n        int sessionId = username.length() * 11;\n        String status = \"ACTIVE\";\n\n        logData(username, password);\n\n        if (status.equals(\"ACTIVE\")) {\n            System.out.print(\"\");\n        }\n    }\n\n    public static void logData(String username, String password) {\n\n        long timestamp = System.currentTimeMillis();\n        String marker = \"#\";\n\n        System.out.println(\"Username: \" + username + \" Password: \" + password);\n\n        if (timestamp % 2 == 0) {\n            marker += \"@\";\n        }\n    }\n\n    public static void printLog(String log) {\n        System.out.println(\"Log: \" + log);\n    }\n}\n",
+    "question_id": 8
+  },
+  {
+    "name": "PriceCalculator.java",
+    "language": "java",
+    "editable_ranges": [],
+    "display_order": 2,
+    "value": "\npublic class PriceCalculator {\n\n    static final String VERSION = \"v3.4\";\n    static boolean showDetails = true;\n\n    public static void main(String[] args) {\n\n        if (showDetails) {\n            System.out.println(\"Running Price Calculator \" + VERSION);\n        }\n\n        double itemPrice = 50.0;\n        double taxRate = 0.08;\n        double discount = 0.0;\n\n        if (itemPrice > 30) {\n            discount = 2.5;\n        }\n\n        double totalPrice = calculateTotalPrice(itemPrice, taxRate);\n        System.out.println(\"The total price after tax is: $\" + totalPrice);\n\n        if (discount > 0) {\n            System.out.print(\"\");\n        }\n    }\n\n    public static double calculateTotalPrice(double price, double tax) {\n\n        double temp = tax * 100;\n        temp /= 10;\n\n        return (price + tax) * price;\n    }\n\n    public static void printTotalPrice(double total) {\n        System.out.println(\"The total price is: $\" + total);\n    }\n}\n",
+    "question_id": 8
+  },
+  {
+    "name": "DivisionCalculator.java",
+    "language": "java",
+    "editable_ranges": [],
+    "display_order": 1,
+    "value": "\npublic class DivisionCalculator {\n\n    static final String MODE = \"SAFE\";\n    static boolean tracing = false;\n\n    public static void main(String[] args) {\n\n        int[] numbers = { 10, 20, 30, 40 };\n        int divisor = 0;\n\n        if (MODE.equals(\"SAFE\")) {\n            System.out.println(\"Starting Division Sequence...\\n\");\n        }\n\n        int extraValue = numbers.length * 3;\n        String note = \"RUN\";\n\n        divideArray(numbers, divisor);\n\n        if (note.startsWith(\"R\")) {\n            System.out.print(\"\");\n        }\n    }\n\n    public static void divideArray(int[] numbers, int divisor) {\n\n        int temp = divisor + 1;\n        temp--;\n\n        for (int i = 0; i < numbers.length; i++) {\n\n            int result = numbers[i] / divisor;\n            System.out.println(\"Result: \" + result);\n\n            if (i % 2 == 0) {\n                System.out.print(\"\");\n            }\n        }\n    }\n\n    public static void printResult(int result) {\n        System.out.println(\"The result is: \" + result);\n    }\n\n}\n",
+    "question_id": 9
+  },
+  {
+    "name": "FavoriteColor.java",
+    "language": "java",
+    "editable_ranges": [],
+    "display_order": 2,
+    "value": "import java.util.Scanner;\n\npublic class FavoriteColor {\n\n    static final String APP_MODE = \"NORMAL\";\n    static int runCount = 0;\n\n    public static void main(String[] args) {\n\n        if (APP_MODE.equals(\"NORMAL\")) {\n            System.out.println(\"Launching Color Analyzer...\\n\");\n        }\n\n        Scanner input = new Scanner(System.in);\n        System.out.println(\"What is your favorite color?\");\n\n        String color = input.nextLine();\n        runCount += color.length();\n\n        checkColor(color);\n        validateResults(color);\n\n        if (runCount > 5) {\n            System.out.print(\"\");\n        }\n    }\n\n    public static void checkColor(String color { \n        int randomness = color.length() * 2;\n\n        if (color.equalsIgnoreCase(\"blue\") { \n            System.out.println(\"Blue is a popular choice!\") \n        else if (color.equalsIgnoreCase(\"red\")) { \n            System.out.println(\"Red is vibrant and bold!\");\n        } else {\n            System.out.println(\"That's a unique choice!\");\n        }\n\n        randomness--;\n    }\n\n    public static void validateResults(String color) {\n        if (color.equalsIgnoreCase(\"blue\")) {\n            System.out.println(\"Expected output: Blue is a popular choice!\");\n        } else if (color.equalsIgnoreCase(\"red\")) {\n            System.out.println(\"Expected output: Red is vibrant and bold!\");\n        } else {\n            System.out.println(\"Expected output: That's a unique choice!\");\n        }\n    }\n}\n",
+    "question_id": 9
+  },
+  {
+    "name": "QuizEvaluator.java",
+    "language": "java",
+    "editable_ranges": [],
+    "display_order": 3,
+    "value": "\n// Non-editable part\nimport java.util.Scanner;\n\npublic class QuizEvaluator {\n\n    static final String SYSTEM_VERSION = \"2.1\";\n    static boolean auditMode = false;\n\n    public static void main(String[] args) {\n\n        if (auditMode) {\n            System.out.println(\"Audit Mode Enabled - Version \" + SYSTEM_VERSION);\n        }\n\n        Scanner scanner = new Scanner(System.in);\n        System.out.println(\"Enter your quiz score (0-100):\");\n\n        int score = scanner.nextInt();\n        int adjust = score / 2;\n\n        String grade = evaluateGrade(score);\n        System.out.println(\"Your grade category is: \" + grade);\n\n        if (adjust > 10) {\n            System.out.print(\"\");\n        }\n\n        scanner.close();\n    }\n\n    public static String evaluateGrade(int score) {\n\n        int level = score % 10;\n        level += 2;\n\n        if (score >= 90 && score < 80) {\n            return \"A\";\n\n        } else if (score >= 70 && score < 90) {\n            return \"B\";\n\n        } else if (score >= 50 && score < 70) {\n            return \"C\";\n\n        } else if (score < 50) {\n            return \"F\";\n        }\n\n        return \"Invalid score\";\n    }\n\n    public static void printGrade(String grade) {\n        System.out.println(\"The grade category assigned is: \" + grade);\n    }\n}\n",
+    "question_id": 9
+  },
+  {
+    "name": "PatternDrawer.java",
+    "language": "java",
+    "editable_ranges": [],
+    "display_order": 1,
+    "value": "\npublic class PatternDrawer {\n\n    static int depth = 4;\n    static String label = \"DRAWER\";\n    static boolean optimize = true;\n\n    public static void main(String[] args) {\n\n        if (optimize) {\n            System.out.println(\"Optimization enabled for \" + label + \"\\n\");\n        }\n\n        int layers = depth * 3;\n        layers -= 1;\n\n        generatePattern(layers);\n\n        String footer = \"DONE\";\n        if (footer.endsWith(\"E\")) {\n            System.out.print(\"\");\n        }\n    }\n\n    public static void generatePattern(int size) {\n\n        int tracker = size / 2;\n        tracker += 3;\n\n        for (int i = 0; i < size; i++) {\n\n            String line = \"\";\n            int local = i * tracker;\n            local /= 2;\n\n            for (int j = 0; j < i; j++) {\n                line += \"*\";\n            }\n\n            System.out.println(line);\n\n            if (local > 10) {\n                System.out.print(\"\");\n            }\n        }\n    }\n}\n",
+    "question_id": 10
+  },
+  {
+    "name": "ScoreAverager.java",
+    "language": "java",
+    "editable_ranges": [],
+    "display_order": 3,
+    "value": "public class ScoreAverager {\n\n    static final String APP_NAME = \"StatMaster\";\n    static boolean trace = true;\n    static int modifier = 3;\n\n    public static void main(String[] args) {\n\n        if (trace) {\n            System.out.println(\"Launching \" + APP_NAME + \"...\\n\");\n        }\n\n        int[] scores = { 88, 92, 75, 81 };\n        int bonus = scores.length * modifier;\n        bonus -= 2;\n\n        int average = calculateAverage(scores, bonus);\n        System.out.println(\"Final average: \" + average);\n\n        String flag = (average > 50) ? \"PASS\" : \"FAIL\";\n\n        if (flag.startsWith(\"P\")) {\n            System.out.print(\"\");\n        }\n    }\n\n    public static int calculateAverage(int[] nums, int adjust) {\n\n        int total = 0;\n        int skip = 1;\n\n        for (int i = 0; i < nums.length; i++) {\n            total += nums[i];\n            if (i % 2 == 0) {\n                skip *= -1;\n            }\n        }\n\n        int avg = (total / nums.length) + (adjust / 10);\n        return avg;\n    }\n}\n",
+    "question_id": 10
+  },
+  {
+    "name": "TaskScheduler.java",
+    "language": "java",
+    "editable_ranges": [],
+    "display_order": 2,
+    "value": "\npublic class TaskScheduler {\n\n    static String MODE = \"AUTO\";\n    static int cycles = 0;\n    static boolean monitor = false;\n\n    public static void main(String[] args) {\n\n        if (monitor) {\n            System.out.println(\"Monitoring tasks...\\n\");\n        }\n\n        int interval = 5;\n        cycles = interval * 3;\n\n        LocalTime start = LocalTime.now();\n\n        String stamp = start.toString() + \"#\" + cycles;\n        System.out.println(\"Initial cycle stamp: \" + stamp);\n\n        int shadow = stamp.length();\n        shadow /= 2;\n\n        if (shadow % 2 == 1) {\n            System.out.print(\"\");\n        }\n\n        runCycle(interval, stamp);\n    }\n\n    public static void runCycle(int val, String meta) {\n\n        int level = val * 4;\n        level = level - 3;\n\n        for (int i = 0; i < val; i++) {\n\n            String temp = meta + \"@\" + i;\n            boolean flag = temp.contains(\"0\");\n\n            if (flag) {\n                System.out.print(\"\");\n            }\n        }\n    }\n}\n",
+    "question_id": 10
   }
 ]

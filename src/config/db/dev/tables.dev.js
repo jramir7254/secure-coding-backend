@@ -605,14 +605,20 @@ public class LegacyAdapter {
 ];
 
 
+const base = ['logic', 'compile', 'runtime', 'vulnerability']
+
+
 const CEQ_ANSWERS_ROWS = [
     {
         question_id: 1,
-        answers: ['compile']
+        answers: ['compile'],
+        choices: base,
     },
     {
         question_id: 3,
-        answers: ['logic', 'runtime']
+        answers: ['logic', 'runtime'],
+        choices: [],
+
     }
 ]
 const OEQ_ANSWERS_ROWS = [
