@@ -1,0 +1,10 @@
+[
+  {
+    "name": "FavoriteColor.java",
+    "language": "java",
+    "editable_ranges": [[13, 23]],
+    "display_order": 1,
+    "value": "import java.util.Scanner;\n\npublic class FavoriteColor {\n    public static void main(String[] args) {\n        Scanner input = new Scanner(System.in);\n        System.out.println(\"What is your favorite color?\");\n        String color = input.nextLine();\n        checkColor(color);\n        validateResults(color);\n    }\n\n    /*** =========================== [EDIT BELOW ONLY] ===========================*/\n\n    public static void checkColor(String color { \n        if (color.equalsIgnoreCase(\"blue\") {\n            System.out.println(\"Blue is a popular choice!\") \n        else if (color.equalsIgnoreCase(\"red\")) {\n            System.out.println(\"Red is vibrant and bold!\");\n        } else {\n            System.out.println(\"That's a unique choice!\");\n        }\n    }\n\n    /*** =========================== [EDIT ABOVE ONLY] ===========================*/\n\n    public static void validateResults(String color) {\n        if (color.equalsIgnoreCase(\"blue\")) {\n            System.out.println(\"Expected output: Blue is a popular choice!\");\n        } else if (color.equalsIgnoreCase(\"red\")) {\n            System.out.println(\"Expected output: Red is vibrant and bold!\");\n        } else {\n            System.out.println(\"Expected output: That's a unique choice!\");\n        }\n    }\n}\n",
+    "question_id": 1
+  }
+]

@@ -1,0 +1,11 @@
+[
+  {
+    "question_id": 1,
+    "inputs": ["blue", "red", "mustard"],
+    "expected_outputs": [
+      "What is your favorite color?\nBlue is a popular choice!\nExpected output: Blue is a popular choice!\n",
+      "What is your favorite color?\nRed is vibrant and bold!\nExpected output: Red is vibrant and bold!\n",
+      "What is your favorite color?\nThat's a unique choice!\nExpected output: That's a unique choice!\n"
+    ]
+  }
+]

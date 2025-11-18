@@ -42,8 +42,9 @@ routes.post('/attempt', authMiddleware, async (req, res) => {
 
     if (questionData?.type === 'coding') {
         logger.info('questions.attempt.coding');
-        const { submittedCode } = req.body
-        const { attemptData, questionData, score, output } = await handleAttempt({ teamId: id, questionId, attemptId, submissionData: { submissionType: 'coding', submittedCode } })
+        const { submissionData } = req.body
+        logger.debug('questions.attempt.coding.submitted_code', { isArray: Array.isArray(submissionData), length: submissionData.length })
+        const { attemptData, questionData, score, output } = await handleAttempt({ teamId: id, questionId, attemptId, submissionData: { submissionType: 'coding', submittedCode: submissionData } })
         return res.status(200).json(snakeToCamel({ attemptData, questionData, score, output }))
     }
 

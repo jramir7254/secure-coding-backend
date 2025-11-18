@@ -24,7 +24,7 @@
     "query": "CREATE TABLE IF NOT EXISTS mcq_attempts (\n    id INTEGER PRIMARY KEY AUTOINCREMENT,\n    attempt_id INTEGER,\n    submitted_answers TEXT,\n    created_at TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP),\n    CONSTRAINT fk_mca_qa_id FOREIGN KEY (attempt_id) REFERENCES question_attempts(id) ON DELETE CASCADE\n);"
   },
   {
-    "name": "oeq_attempts",
+    "name": "coding_attempts",
     "query": "CREATE TABLE IF NOT EXISTS coding_attempts (\n    id INTEGER PRIMARY KEY AUTOINCREMENT,\n    attempt_id INTEGER,\n    submitted_code TEXT,\n    CONSTRAINT fk_ca_qa_id FOREIGN KEY (attempt_id) REFERENCES question_attempts(id) ON DELETE CASCADE\n);"
   },
   {
@@ -37,6 +37,6 @@
   },
   {
     "name": "coding_answers",
-    "query": "CREATE TABLE IF NOT EXISTS coding_answers (\n    id INTEGER PRIMARY KEY AUTOINCREMENT,\n    question_id INTEGER NOT NULL,\n    input TEXT NOT NULL,\n    expected_output TEXT,\n    CONSTRAINT fk_test_cases_question FOREIGN KEY (question_id) REFERENCES questions(id) ON DELETE CASCADE\n);"
+    "query": "CREATE TABLE IF NOT EXISTS coding_answers (\n    id INTEGER PRIMARY KEY AUTOINCREMENT,\n    question_id INTEGER NOT NULL,\n    inputs TEXT NOT NULL,\n    expected_outputs TEXT,\n    CONSTRAINT fk_test_cases_question FOREIGN KEY (question_id) REFERENCES questions(id) ON DELETE CASCADE\n);"
   }
 ]

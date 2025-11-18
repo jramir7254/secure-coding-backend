@@ -20,7 +20,8 @@
   },
   "include": [
     "src/**/*.js", // Include your JavaScript source files
-    "types/**/*.d.ts" // Include your custom .d.ts files
+    "types/**/*.d.ts", // Include your custom .d.ts files
+    "ignore/run.js"
   ],
   "exclude": ["node_modules", "dist"]
 }

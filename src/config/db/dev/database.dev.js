@@ -6,8 +6,10 @@ const { open } = require('sqlite');
 const TABLES = require('./tables.dev');
 const logger = require('@shared/logger');
 const tables = require('./tables.json');
-const codeFiles = require('./code-files.json');
-const questions = require('./questions.json');
+const codeFiles = require('./files.json');
+// const questions = require('./questions.json');
+const codingQuestions = require('./coding-questions.json')
+const codingAnswers = require('./coding-answers.json')
 const mcqAnswers = require('./mcq-answers.json');
 
 const dbPath = path.resolve(__dirname, 'dev.db');
@@ -116,7 +118,7 @@ async function seed() {
      VALUES (?, ?, ?, ?, ?)`
     );
 
-    for (const q of questions) {
+    for (const q of codingQuestions) {
         await stmt.run(q.title, q.type, q.difficulty, JSON.stringify(q.tags), q.description);
     }
 
@@ -146,26 +148,26 @@ async function seed() {
      VALUES (?, ?, ?)`
     );
 
-    for (const q of mcqAnswers) {
-        await stmt3.run(q.question_id, JSON.stringify(q.choices), JSON.stringify(q.answers));
-    }
+    // for (const q of mcqAnswers) {
+    //     await stmt3.run(q.question_id, JSON.stringify(q.choices), JSON.stringify(q.answers));
+    // }
 
-    await stmt3.finalize();
-    logger.info('table.seeded', { table: 'mcq_answers', entries: TABLES.CEQ_ANSWERS_ROWS.length });
+    // await stmt3.finalize();
+    // logger.info('table.seeded', { table: 'mcq_answers', entries: TABLES.CEQ_ANSWERS_ROWS.length });
 
 
 
     const stmt4 = await db.prepare(
-        `INSERT INTO coding_answers (question_id, input, expected_output)
+        `INSERT INTO coding_answers (question_id, inputs, expected_outputs)
      VALUES (?, ?, ?)`
     );
 
-    for (const q of TABLES.OEQ_ANSWERS_ROWS) {
-        await stmt4.run(q.question_id, JSON.stringify(q.input), q.expected_output);
+    for (const q of codingAnswers) {
+        await stmt4.run(q.question_id, JSON.stringify(q.inputs), JSON.stringify(q.expected_outputs));
     }
 
     await stmt4.finalize();
-    logger.info('table.seeded', { table: 'coding_answers', entries: TABLES.OEQ_ANSWERS_ROWS.length });
+    logger.info('table.seeded', { table: 'coding_answers', entries: codingAnswers.length });
 
 
 

@@ -36,8 +36,14 @@ function snakeToCamel(param) {
     return param;
 }
 
-
-function areArraysEqual(arr1, arr2) {
+/**
+ * @template T The type of the class to instantiate.
+ * @param {Array<T>} arr1 
+ * @param {Array<T>} arr2 
+ * @param {boolean} ordered 
+ * @returns 
+ */
+function areArraysEqual(arr1, arr2, ordered = false) {
     // First, check if they are the same reference (primitive equality)
     if (arr1 === arr2) {
         return true;

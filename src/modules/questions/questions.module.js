@@ -76,13 +76,12 @@ async function switchTeamSection(teamId, onSection) {
 
     const db = await connect();
 
-    if (onSection === 'exploit') {
+    if (onSection === 'coding') {
         throw new ExpectedAppError('Team finished');
     }
 
     let newSection;
     if (onSection === 'mcq') newSection = 'coding';
-    else if (onSection === 'coding') newSection = 'exploit';
 
     logger.info('section.rotation', { currSection: onSection, newSection });
 
@@ -224,172 +223,22 @@ async function getRandomUnattemptedQuestion(teamId, onSection) {
 
 
 
-function areArraysEqual(arr1, arr2) {
-    // First, check if they are the same reference (primitive equality)
-    if (arr1 === arr2) {
-        return true;
-    }
 
-    // If either is null or undefined, they are not equal (unless both are)
-    if (arr1 == null || arr2 == null) {
-        return false;
-    }
 
-    // Check if lengths are different
-    if (arr1.length !== arr2.length) {
-        return false;
-    }
 
-    // Iterate and compare each element
-    for (let i = 0; i < arr1.length; i++) {
-        // For deep comparison of objects within arrays, you might need recursion
-        // or a specialized deep comparison library. This example assumes
-        // primitive values or objects that can be compared with strict equality.
-        if (arr1[i] !== arr2[i]) {
-            return false;
-        }
-    }
 
-    return true;
-}
 
 
-async function handleMultipleChoiceAttempt({ teamId, attemptId, questionId, selectedAnswer }) {
 
-    const db = await connect();
-    // await db.run('INSERT INTO ceq_attempts (attempt_id, selected_answer) VALUES (?,?)', [attemptId, selectedAnswer])
-    const an = await db.get('SELECT * FROM mcq_answers WHERE question_id = ?', [questionId])
 
-    logger.debug('answers', { answers: JSON.parse(an?.answers), selectedAnswer })
 
-    const correct = areArraysEqual(JSON.parse(an?.answers), selectedAnswer)
 
-    logger.debug('correct', { correct })
 
 
-    if (!correct) {
-        logger.warn('Wrong answer')
 
-        throw new Error("Wrong answer")
-    }
 
-    logger.success('Correct, closing attempt')
-    await db.run("UPDATE question_attempts SET completed_at = datetime('now', 'localtime') WHERE id = ?", [attemptId])
-    logger.info('Attempt closed')
 
-    const count = await db.get('SELECT COUNT (*) FROM mcq_attempts WHERE attempt_id = ?', [attemptId])
-    logger.debug('Count', { count: count['COUNT (*)'] })
 
-    const score = 100 - count['COUNT (*)']
-
-    logger.debug('Score', { score })
-    await db.run(`
-  INSERT INTO leaderboard (team_id, total_points)
-  VALUES (?, ?)
-  ON CONFLICT(team_id)
-  DO UPDATE SET total_points = leaderboard.total_points + excluded.total_points
-`, [teamId, score]);
-
-    const { teamName } = await db.get('SELECT team_name AS teamName FROM teams WHERE id = ?', [teamId])
-    logger.debug('teamName', { teamName })
-
-    const io = getIO()
-    io.emit("leaderboard_updated", { teamId, score, teamName });
-
-
-    logger.info('Rotating question type')
-    // const { lastID } = await db.run("INSERT INTO question_attempts (team_id, question_id, type) VALUES (?,?,'coding')", [teamId, questionId])
-
-    // return { attemptId: lastID, score }
-
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-async function handleCodingAttempt({ teamId, attemptId, questionId, submittedCode }) {
-    const db = await connect();
-    await db.run('INSERT INTO coding_attempts (attempt_id, submitted_code) VALUES (?,?)', [attemptId, submittedCode])
-
-
-    const { data } = await pistonApi.post('', {
-        "language": "java",
-        "version": "15.0.2",
-        "files": [
-            {
-                "name": "Main.java",
-                "content": submittedCode
-            }
-        ],
-        "stdin": "",
-        "args": []
-    })
-
-    let { output } = data?.run
-
-    output = output.replace(/^"+|"+$/g, "").trim().replace(/^\s+/gm, "");
-
-
-    logger.debug('Output', { output })
-
-    const { expected_output } = await db.get('SELECT expected_output FROM questions WHERE id = ?', [questionId])
-    if (expected_output !== output) {
-        logger.warn('Wrong answer output', { expected: expected_output, actual: output })
-
-        throw new IncorrectAttemptError(output)
-    } else {
-        logger.success('Correct answer output', { expected: expected_output, actual: output })
-
-    }
-
-
-    // return { output }
-
-
-
-    logger.success('Correct, closing attempt')
-    await db.run("UPDATE question_attempts SET completed_at = datetime('now', 'localtime') WHERE id = ?", [attemptId])
-    logger.info('Attempt closed')
-
-    const count = await db.get('SELECT COUNT (*) FROM coding_attempts WHERE attempt_id = ?', [attemptId])
-    logger.debug('Count', { count: count['COUNT (*)'] })
-
-    const score = 100 - count['COUNT (*)']
-
-    logger.debug('Score', { score })
-    await db.run('INSERT INTO leaderboard (team_id, attempt_id, total_points) VALUES (?,?,total_points+?)', [teamId, attemptId, score])
-
-    const { teamName } = await db.get('SELECT team_name FROM teams WHERE id = ?', [teamId])
-
-    logger.debug('teamName', { teamName })
-
-    const io = getIO()
-    io.emit("leaderboard_updated", { teamId, score, teamName });
-
-    logger.info('Rotating question')
-    const { attemptId: newAttemptId, question, questionType } = await getQuestion(teamId)
-
-    return { attemptId: newAttemptId, question, questionType, output, score }
-
-}
 
 
 
@@ -403,4 +252,4 @@ async function getAllQuestions() {
 
 
 
-module.exports = { getQuestion, handleMultipleChoiceAttempt, handleCodingAttempt, getAllQuestions }
+module.exports = { getQuestion, getAllQuestions }

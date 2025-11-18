@@ -25,12 +25,12 @@ async function handleAttempt({ teamId, attemptId, questionId, submissionData }) 
 
     if (submissionData?.submissionType === 'coding') {
         const { submittedCode } = submissionData
-        logger.debug('questions.attempts.coding.submitted', submittedCode)
+        // logger.debug('questions.attempts.coding.submitted', submittedCode)
         const { timeCompleted, count, output } = await handleCodingAttempt({ teamId, attemptId, questionId, submittedCode })
 
         const score = await _updateLeaderboard(timeCompleted, count, teamId)
-        const { questionData, attemptData } = await getQuestion(teamId, 'coding')
-        return { score, questionData, attemptData, output }
+        // const { questionData, attemptData } = await getQuestion(teamId, 'coding')
+        return { score, output }
     }
 
 }
@@ -97,7 +97,7 @@ async function _updateLeaderboard(timeCompleted, points, teamId) {
     logger.info('questions.attempts.team', { teamName })
 
     const io = getIO()
-    io.emit("leaderboard_updated", { teamId, score, teamName });
+    io.emit("leaderboard_updated", { teamId, totalPoints: score, teamName });
 
     return score
 
@@ -119,6 +119,9 @@ async function handleCodingAttempt({ teamId, attemptId, questionId, submittedCod
     const db = await connect();
     await db.run('INSERT INTO coding_attempts (attempt_id, submitted_code) VALUES (?,?)', [attemptId, "submittedCode"])
 
+    logger.debug('handleCodingAttempt', { isArray: Array.isArray(submittedCode), length: submittedCode.length })
+
+
     const nonJavaFiles = submittedCode.filter(f => !f.uri.endsWith('java'))
 
     logger.debug('nonJavaFiles', { nonJavaFiles })
@@ -134,47 +137,105 @@ async function handleCodingAttempt({ teamId, attemptId, questionId, submittedCod
 
     nonJavaFiles.forEach(n => files.push({ name: n.uri.split('/').pop(), content: n.value }))
 
-    logger.debug('files', { files })
+    // logger.debug('files', { files })
+    const { expectedOutputs, inputs } = await db.get('SELECT expected_outputs AS expectedOutputs, inputs FROM coding_answers WHERE id = ?', [questionId])
 
-    const { data } = await pistonApi.post('', {
-        language: "java",
-        version: "15.0.2",
-        files,
-        compile_timeout: 10000,
-        run_timeout: 5000,
-        compile_memory_limit: -1,
-        run_memory_limit: -1,
-        stdin: "4\n5\n3"
-        // Custom compile + run commands:
-        // (compile all .java files and run ShoppingCart)
-    });
-    let { output } = data?.run
+    const actualOutputs = []
+
+    const inputArray = JSON.parse(inputs);
+
+    for (const input of inputArray) {
+        const { data } = await pistonApi.post('', {
+            language: "java",
+            version: "15.0.2",
+            files,
+            compile_timeout: 10000,
+            run_timeout: 5000,
+            compile_memory_limit: -1,
+            run_memory_limit: -1,
+            stdin: input
+        });
+
+
+        const errorCheck = checkForErrors(data);
+
+        if (errorCheck.error) {
+            logger.error(`[STOPPED] ${errorCheck.type} error: ${errorCheck.message}`);
+            // return {
+            //     success: false,
+            //     errorType: errorCheck.type,
+            //     errorMessage: errorCheck.message
+            // };
+        }
+
+
+        const output = data?.run.output;
+        logger.debug(`[output]: ${output}`);
+        actualOutputs.push(output);
+
+        // Respect rate-limit (1 request per 200ms)
+        await new Promise((res) => setTimeout(res, 210));
+    }
+
+
 
     // output = output.replace(/^"+|"+$/g, "").trim().replace(/^\s+/gm, "");
 
+    const parsedExpectedOutputs = JSON.parse(expectedOutputs)
 
-    logger.debug('Output', { output })
 
-    const { expected_output } = await db.get('SELECT expected_output FROM coding_answers WHERE id = ?', [questionId])
-    if (expected_output !== output) {
-        logger.warn('Wrong answer output', { expected: expected_output, actual: output })
+    logger.debug('Output', { actualOutputs, parsedExpectedOutputs, inputs })
+    // throw new IncorrectAttemptError(actualOutputs)
 
-        throw new IncorrectAttemptError(output)
+    if (areArraysEqual(actualOutputs, parsedExpectedOutputs)) {
+        logger.success('Correct answer output', { expected: parsedExpectedOutputs, actual: actualOutputs })
     } else {
-        logger.success('Correct answer output', { expected: expected_output, actual: output })
-
+        logger.warn('Wrong answer output', { expected: parsedExpectedOutputs, actual: actualOutputs })
+        throw new IncorrectAttemptError(actualOutputs)
     }
 
 
     const timeCompleted = await _closeCurrentAttempt(attemptId)
 
 
-    const count = await db.get('SELECT COUNT (*) FROM mcq_attempts WHERE attempt_id = ?', [attemptId])
+    const count = await db.get('SELECT COUNT (*) FROM coding_attempts WHERE attempt_id = ?', [attemptId])
     logger.info('questions.attempts.count', { count: count['COUNT (*)'] })
 
-    return { timeCompleted, count: count['COUNT (*)'], output }
+    return { timeCompleted, count: count['COUNT (*)'], output: actualOutputs }
 
 }
+
+function checkForErrors(data) {
+    // 1. Compilation error
+    if (data.compile && data.compile.stderr) {
+        return {
+            error: true,
+            type: 'compile',
+            message: data.compile.stderr
+        };
+    }
+
+    // 2. Runtime exception
+    if (data.run && data.run.stderr) {
+        return {
+            error: true,
+            type: 'runtime',
+            message: data.run.stderr
+        };
+    }
+
+    // 3. Non-zero exit code
+    if (data.run && data.run.code !== 0) {
+        return {
+            error: true,
+            type: 'exit',
+            message: data.run.output
+        };
+    }
+
+    return { error: false };
+}
+
 
 
 function mergeJavaFiles(fileObjects) {
@@ -198,19 +259,12 @@ function mergeJavaFiles(fileObjects) {
         classContents.push({ uri, code });
     }
 
-    // Detect the file with `public static void main`
-    // classContents.sort((a, b) => {
-    //     const aHasMain = /public\s+static\s+void\s+main\s*\(/.test(a.code);
-    //     const bHasMain = /public\s+static\s+void\s+main\s*\(/.test(b.code);
-    //     return aHasMain ? 1 : bHasMain ? -1 : 0; // push main class last
-    // });
-
     // Combine everything
     const merged = `${Array.from(imports).join('\n')}\n\n` +
         classContents.map(f => `// ---- From ${f.uri} ----\n${f.code}`).join('\n\n');
 
 
-    logger.pretty(merged)
+    // logger.pretty(merged)
 
     return merged.trim();
 }
