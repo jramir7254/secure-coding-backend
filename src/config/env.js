@@ -28,10 +28,10 @@ module.exports = {
 
     // Database
     db: {
-        host: _required("DB_HOST"),
-        user: _required("DB_USER"),
-        password: _required("DB_PASS"),
-        name: _required("DB_NAME"),
+        host: process.env.HOST,
+        user: process.env.HOST,
+        password: process.env.HOST,
+        name: process.env.HOST,
     },
 
     admin: {
