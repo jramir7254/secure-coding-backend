@@ -1,4 +1,4 @@
-name: Deploy Secure Coding Backend
+name: Deploy SC Backend
 
 on:
   push:
@@ -19,10 +19,7 @@ jobs:
           node-version: "20"
 
       - name: Install dependencies
-        run: npm install
-
-      - name: Build React app
-        run: npm run build
+        run: npm ci
 
       - name: Test Deploy via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
@@ -30,6 +27,6 @@ jobs:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: ./dist/
+          local-dir: ./
           server-dir: ./secure-coding-backend/ # adjust if deploying to subdirectory
           dangerous-clean-slate: false
