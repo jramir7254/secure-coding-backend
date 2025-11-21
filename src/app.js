@@ -22,7 +22,7 @@ const server = http.createServer(app);
 // --- Socket.IO setup ---
 const io = new Server(server, {
     cors: {
-        origin: 'http://localhost:5173', // React client
+        origin: '*', // React client
         methods: ['GET', 'POST'],
     },
 });
@@ -33,16 +33,16 @@ registerSocketHandlers(io);
 
 
 // --- Express routes ---
-app.get('/', async (req, res) => {
+app.get('/api', async (req, res) => {
     console.log('call made');
-    return res.status(200).json({});
+    return res.status(200).send('Server up')
 });
 
 
-app.use('/auth', authRoutes)
-app.use('/questions', questionRoutes)
-app.use('/admin', authMiddleware, requireAdmin, adminRoutes)
-app.use('/games', gameRoutes)
+app.use('/api/auth', authRoutes)
+app.use('/api/questions', questionRoutes)
+app.use('/api/admin', authMiddleware, requireAdmin, adminRoutes)
+app.use('/api/games', gameRoutes)
 
 app.use((err, req, res, next) => {
     logger.error('error', { err });

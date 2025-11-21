@@ -189,7 +189,7 @@ async function getRandomUnattemptedQuestion(teamId, onSection) {
       )
       AND q.type = ?
       GROUP BY q.id
-      ORDER BY RANDOM()
+      ORDER BY q.id
       LIMIT 1;
       `,
             [teamId, onSection]
