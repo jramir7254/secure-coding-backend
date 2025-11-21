@@ -1,6 +1,6 @@
 // @ts-nocheck
 const chalk = require('chalk');
-const stripAnsi = require('strip-ansi');
+// const stripAnsi = require('strip-ansi');
 const { colorize, color } = require('json-colorizer');
 const prettyjson = require('prettyjson');
 
